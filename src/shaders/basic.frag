@@ -1,13 +1,20 @@
 precision highp float;
 
-const float DATA_LENGTH = 256.0;
+const float DATA_LENGTH = 512.0;
 const float ELEMENTS_PER_TEXEL = 3.0;
 
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform sampler2D u_freq;
+uniform float u_freqScale;
 
 uniform float u_channel;
+
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
 
 float getComponent(vec4 data, float x) {
   float m = mod(x, ELEMENTS_PER_TEXEL);
@@ -21,11 +28,18 @@ float getComponent(vec4 data, float x) {
   );
 }
 
-void main() {
-  vec2 st = gl_FragCoord.st / u_resolution.st;
+float noteFrequency(float key) {
+  return pow(2.0, (key - 49.0) / 12.0) * 440.0;
+}
 
-  float stx = st.x / 2.0;
-  vec4 data = texture2D(u_freq, vec2(stx, u_channel));
+void main() {
+  vec2 st = gl_FragCoord.ts / u_resolution.ts;
+
+  float key = st.x * 100.0;
+  float noteFreq = noteFrequency(key);
+  float stx = noteFreq / u_freqScale;
+
+  vec4 data = texture2D(u_freq, vec2(stx, st.y));
 
   float x = stx * DATA_LENGTH * ELEMENTS_PER_TEXEL;
 

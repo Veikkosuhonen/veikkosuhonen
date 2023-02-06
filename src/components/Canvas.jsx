@@ -3,6 +3,7 @@ import { fragmentSrc, vertexSrc } from "~/shaders";
 import { getTimeDomainData } from "./Audio";
 
 const [channel, setChannel] = createSignal(0.0);
+const [freqScale, setFreqScale] = createSignal(8800.0);
 
 const startRendering = (canvas) => {
   // Get WebGL context from canvas
@@ -45,7 +46,7 @@ const startRendering = (canvas) => {
 
   const level = 0;
   const internalFormat = gl.RGBA;
-  const width = 256;
+  const width = 512;
   const height = 2;
   const border = 0;
   const srcFormat = gl.RGBA;
@@ -85,6 +86,9 @@ const startRendering = (canvas) => {
 
     ul = gl.getUniformLocation(program, "u_channel");
     gl.uniform1f(ul, channel());
+
+    ul = gl.getUniformLocation(program, "u_freqScale");
+    gl.uniform1f(ul, freqScale());
   
     gl.texImage2D(
       gl.TEXTURE_2D,
@@ -120,9 +124,10 @@ export default function Canvas() {
   })
 
   return (
-    <>
+    <div>
       <canvas ref={canvas} width="1280" height="720" style={{ width: "90%", height: "80%" }} class="bg-black"/>
       <button onClick={() => setChannel(channel() ? 0.0 : 0.9)}>SWITCH CHANNEL</button>
-    </>
+      <input type="range" min="8000" max="16000" value={freqScale()} onInput={e => setFreqScale(e.target.valueAsNumber)} />
+    </div>
   );
 }

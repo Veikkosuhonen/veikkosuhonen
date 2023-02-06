@@ -1,16 +1,16 @@
 import { createSignal, onMount } from "solid-js";
 
 let audioContext;
-let analyser;
-let dataArray = new Uint8Array(2048);
-let timeArray = new Uint8Array(1024);
+const analysers = [null, null];
+let dataArray1 = new Uint8Array(4096);
+let dataArray2 = new Uint8Array(2048);
 let bufferLength;
 
 export const getTimeDomainData = () => {
-  analyser?.getByteFrequencyData(dataArray);
-  // analyser?.getByteTimeDomainData(timeArray);
-  dataArray.set(timeArray, 1024);
-  return dataArray;
+  analysers[0]?.getByteFrequencyData(dataArray1);
+  analysers[1]?.getByteFrequencyData(dataArray2);
+  dataArray1.set(dataArray2, 2048);
+  return dataArray1;
 }
 
 export default function Audio() {
@@ -23,59 +23,60 @@ export default function Audio() {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
 
     audioContext = new AudioContext();
-    console.log(audio)
-    console.log(audioContext)
-    const track = audioContext.createMediaElementSource(audio);
-    analyser = audioContext.createAnalyser()
-    analyser.fftSize = 2048;
-
-    const delayNode = new DelayNode(audioContext, { delayTime: 0.05 })
-
-    track.connect(analyser);
-    analyser.connect(delayNode)
-    delayNode.connect(audioContext.destination)
-
-    bufferLength = analyser.frequencyBinCount;
   
-    setSettings({
-      minDecibels: analyser.minDecibels,
-      maxDecibels: analyser.maxDecibels, 
-      smoothingTimeConstant: analyser.smoothingTimeConstant
+    const track = audioContext.createMediaElementSource(audio);
+    const splitter = audioContext.createChannelSplitter(2);
+    track.connect(splitter);
+    const merger = audioContext.createChannelMerger(2);
+    analysers[0] = audioContext.createAnalyser()
+    analysers[1] = audioContext.createAnalyser()
+    analysers[0].fftSize = 4096;
+    analysers[1].fftSize = 4096;
+//
+    //const delayNode = new DelayNode(audioContext, { delayTime: 0.05 })
+//
+    splitter.connect(analysers[0], 0);
+    splitter.connect(analysers[1], 1);
+    //analysers[0].connect(merger, 0, 0)
+    //analysers[0].connect(merger, 0, 1)
+    splitter.connect(merger, 0, 0)
+    splitter.connect(merger, 1, 1)
+    merger.connect(audioContext.destination)
+  
+    onSettingsChange({
+      minDecibels: -65,
+      maxDecibels: -30, 
+      smoothingTimeConstant: 0.75
     })
   })
 
   const onClick = () => {
-    console.log("click")
     if (audioContext.state === "suspended") {
       audioContext.resume();
     }
     if (!isPlaying()) {
-      console.log("playing")
       audio.play()
       setIsPlaying(true)
     } else {
-      console.log("pausing")
       audio.pause()
       setIsPlaying(false)
     }
   }
 
   const onSettingsChange = (value) => {
-    console.log(value)
-    console.log(settings())
     setSettings({ ...settings(), ...value })
-    Object.assign(analyser, value)
+    analysers.forEach(a => Object.assign(a, value))
   }
 
   return (
     <div>
-      <audio ref={audio} src="howls_moving_castle.mp3"/>
+      <audio ref={audio} src="audio/private/roundabout.mp3"/>
       <button onClick={onClick}>
         {isPlaying() ? "Pause" : "Play"}
       </button>
-      <input type="range" min="-200" max={settings().maxDecibels} value={settings().minDecibels} onInput={event => onSettingsChange({ minDecibels: event.target.valueAsNumber })}/>
-      <input type="range" min={settings().minDecibels} max="0" value={settings().maxDecibels} onInput={event => onSettingsChange({ maxDecibels: event.target.valueAsNumber })}/>
-      <input type="range" min="0" max="100" value={settings().smoothingTimeConstant * 100} onInput={event => onSettingsChange({ smoothingTimeConstant: event.target.valueAsNumber / 100 })}/>
+      <input type="range" min="-100" max={settings().maxDecibels} value={settings().minDecibels} onInput={event => onSettingsChange({ minDecibels: event.target.valueAsNumber })}/>
+      <input type="range" min={settings().minDecibels} max="-10" value={settings().maxDecibels} onInput={event => onSettingsChange({ maxDecibels: event.target.valueAsNumber })}/>
+      <input type="range" min="50" max="90" value={settings().smoothingTimeConstant * 100} onInput={event => onSettingsChange({ smoothingTimeConstant: event.target.valueAsNumber / 100 })}/>
     </div>
   );
 }
