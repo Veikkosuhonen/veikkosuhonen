@@ -14,6 +14,7 @@ export const getTimeDomainData = () => {
 }
 
 export default function Audio() {
+  const [audioUrl, setAudioUrl] = createSignal(null)
   const [isPlaying, setIsPlaying] = createSignal(false)
   const [settings, setSettings] = createSignal({  })
 
@@ -68,15 +69,23 @@ export default function Audio() {
     analysers.forEach(a => Object.assign(a, value))
   }
 
+  const onAudioUpload = (event) => {
+    const files = event.target.files
+    if (!(files.length > 0)) return
+    const url = URL.createObjectURL(files[0])
+    setAudioUrl(url)
+  }
+
   return (
     <div>
-      <audio ref={audio} src="audio/private/roundabout.mp3"/>
+      <audio ref={audio} src={audioUrl()}/>
       <button onClick={onClick}>
         {isPlaying() ? "Pause" : "Play"}
       </button>
       <input type="range" min="-100" max={settings().maxDecibels} value={settings().minDecibels} onInput={event => onSettingsChange({ minDecibels: event.target.valueAsNumber })}/>
       <input type="range" min={settings().minDecibels} max="-10" value={settings().maxDecibels} onInput={event => onSettingsChange({ maxDecibels: event.target.valueAsNumber })}/>
       <input type="range" min="50" max="90" value={settings().smoothingTimeConstant * 100} onInput={event => onSettingsChange({ smoothingTimeConstant: event.target.valueAsNumber / 100 })}/>
+      <input type="file" onChange={onAudioUpload} />
     </div>
   );
 }
