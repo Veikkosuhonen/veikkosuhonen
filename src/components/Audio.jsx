@@ -80,7 +80,7 @@ export default function Audio() {
   }
 
   return (
-    <div class="flex items-stretch text-slate-300 text-sm gap-2">
+    <div class="flex flex-wrap items-stretch text-slate-300 text-sm gap-2">
       <audio ref={audio} src={audioUrl()}/>
       <div class="flex items-center p-4 backdrop-blur bg-zinc-900/30 border-zinc-900 border-2 rounded">
         <button onClick={onClick} class={"bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-full shadow-lg p-1 w-16 text-center " + (isPlaying() ? "shadow-pink-600/20" : "")}>
