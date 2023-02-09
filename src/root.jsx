@@ -1,5 +1,5 @@
 // @refresh reload
-import { Suspense } from "solid-js";
+import { Suspense } from "solid-js"
 import {
   useLocation,
   A,
@@ -12,34 +12,28 @@ import {
   Routes,
   Scripts,
   Title,
-} from "solid-start";
-import "./root.css";
+} from "solid-start"
+import "./root.css"
 export default function Root() {
-  const location = useLocation();
+  const location = useLocation()
   const active = (path) =>
     path == location.pathname
-      ? "border-sky-600"
-      : "border-transparent hover:border-sky-600";
+      ? "border-pink-800"
+      : "border-transparent hover:border-pink-800"
   return (
-    <Html lang="en">
+    <Html lang="en" class="h-full">
       <Head>
         <Title>SolidStart - With TailwindCSS</Title>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Body class="bg-black m-0">
+      <Body class="bg-zinc-900 m-0 h-full flex flex-col">
         <Suspense>
           <ErrorBoundary>
-            <nav class="bg-sky-800">
+            <nav class="bg-zinc-900">
               <ul class="container flex items-center p-3 text-gray-200">
                 <li class={`border-b-2 ${active("/")} mx-1.5 sm:mx-6`}>
-                  <A href="/">Home</A>
-                </li>
-                <li class={`border-b-2 ${active("/about")} mx-1.5 sm:mx-6`}>
-                  <A href="/about">About</A>
-                </li>
-                <li class={`border-b-2 ${active("/about")} mx-1.5 sm:mx-6`}>
-                  <A href="/visualiser">Visualiser</A>
+                  <A href="/">Music visualizer</A>
                 </li>
               </ul>
             </nav>
@@ -51,5 +45,5 @@ export default function Root() {
         <Scripts />
       </Body>
     </Html>
-  );
+  )
 }
