@@ -58,7 +58,7 @@ void main() {
   vec3 outerColor = mix(vec3(0.0157, 0.0431, 0.0902), vec3(0.2471, 0.0588, 0.1451), barHeight * 2.0 - 0.3);
   
   vec3 color = mix(innerColor, outerColor, (1.0 - (barHeight - distanceFromCenter) / barHeight));
-  color = mix(color, vec3(0.1961, 1.0, 0.6235), barHeight * barHeight * 0.1 * max(1.0 / distanceFromCenter, 0.0));
+  color = mix(color, vec3(0.1961, 1.0, 0.6235), barHeight * barHeight * 0.2 * max(1.0 / distanceFromCenter, 0.0));
   color = mix(vec3(0.0), color, a);
 
   gl_FragColor = vec4(color, a);

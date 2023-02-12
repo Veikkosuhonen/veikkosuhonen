@@ -1,7 +1,9 @@
-import vertexSrc from "./basic.vert?raw"
-import fragmentSrc from "./basic.frag?raw"
+import basicVertex from "./basic.vert?raw"
+import basicFragment from "./basic.frag?raw"
+import hdrFragment from "./hdr.frag?raw"
 
 export {
-  vertexSrc,
-  fragmentSrc,
+  basicVertex,
+  basicFragment,
+  hdrFragment
 }

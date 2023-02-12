@@ -1,5 +1,6 @@
-import { Show, createResource, createSignal, For, createEffect, onMount } from "solid-js"
+import { Show, createResource, createSignal, For, onMount } from "solid-js"
 import Slider from "./Slider"
+import { setValue, settings } from "../graphics/settingsStore"
 
 let audioContext
 const analysers = [null, null]
@@ -71,7 +72,6 @@ export default function AudioPlayer() {
   const [audioDevice, setAudioDevice] = createSignal(null)
   const [isPlaying, setIsPlaying] = createSignal(false)
   const [isRecording, setIsRecording] = createSignal(false)
-  const [settings, setSettings] = createSignal({  })
 
   const setAudioSource = (file, inputType) => {
     const url = URL.createObjectURL(file)
@@ -171,9 +171,10 @@ export default function AudioPlayer() {
     }
   }
 
-  const onSettingsChange = (value) => {
-    setSettings({ ...settings(), ...value })
-    analysers.forEach(a => Object.assign(a, value))
+  const onSettingsChange = (setting, value) => {
+    setValue(setting.name, value)
+    if (setting.stage === "audio")
+      analysers.forEach(a => a[setting.name] = value)
   }
 
   const onAudioUpload = (event) => {
@@ -188,9 +189,9 @@ export default function AudioPlayer() {
         <button onClick={onClick} class={"bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-full shadow-lg p-1 w-16 text-center " + (isPlaying() ? "shadow-pink-600/20" : "")}>
           {isPlaying() ? "Pause" : "Play"}
         </button>
-        <Slider min="-100" max={settings().maxDecibels} value={settings().minDecibels} onChange={event => onSettingsChange({ minDecibels: event.target.valueAsNumber })}/>
-        <Slider min={settings().minDecibels} max="-10" value={settings().maxDecibels} onChange={event => onSettingsChange({ maxDecibels: event.target.valueAsNumber })}/>
-        <Slider min="50" max="90" value={settings().smoothingTimeConstant * 100} onChange={event => onSettingsChange({ smoothingTimeConstant: event.target.valueAsNumber / 100 })}/>
+        <For each={settings}>{setting => 
+          <Slider setting={setting} disabled={!audio()} onChange={onSettingsChange} />
+        }</For>
       </div>
 
       <div class="flex flex-col items-center p-4 backdrop-blur bg-zinc-900/30 border-zinc-900 border-2 rounded-md">
