@@ -28,7 +28,7 @@ export const [settings, setSettings] = createStore<Setting[]>([
   },
   {
     name: "smoothingTimeConstant",
-    min: 0,
+    min: 0.4,
     max: 0.9,
     value: 0.7,
     step: 0.1,

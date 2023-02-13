@@ -40,7 +40,7 @@ const DeviceSelector: Component<{
   const [devices, {refetch}] = createResource(async () => {
     console.log("looking for devices...")
     const devices = await navigator.mediaDevices.enumerateDevices()
-    console.log("found devices")
+    console.log("found devices: ", devices)
     const audioDevices = devices.filter((d) => d.kind === "audioinput")
     return audioDevices
   }, { ssrLoadFrom: "initial", initialValue: [] })
