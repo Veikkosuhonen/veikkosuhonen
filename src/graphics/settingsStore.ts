@@ -12,9 +12,9 @@ export type Setting = {
 export const [settings, setSettings] = createStore<Setting[]>([
   {
     name: "minDecibels",
-    min: -120,
-    max: -40,
-    value: -80,
+    min: -110,
+    max: -30,
+    value: -70,
     step: 10,
     stage: "audio",
   },
@@ -22,15 +22,15 @@ export const [settings, setSettings] = createStore<Setting[]>([
     name: "maxDecibels",
     min: -60,
     max: 30,
-    value: -30,
+    value: -10,
     step: 10,
     stage: "audio",
   },
   {
-    name: "smoothingConstant",
+    name: "smoothingTimeConstant",
     min: 0,
-    max: 1,
-    value: 0,
+    max: 0.9,
+    value: 0.7,
     step: 0.1,
     stage: "audio",
   },
@@ -73,6 +73,22 @@ export const [settings, setSettings] = createStore<Setting[]>([
     value: 2.2,
     step: 0.1,
     stage: "post",
+  },
+  {
+    name: "hue",
+    min: 0.0,
+    max: 3.14,
+    step: 0.1,
+    value: 0.0,
+    stage: "render",
+  },
+  {
+    name: "brightness",
+    min: 0.05,
+    max: 1.0,
+    step: 0.05,
+    value: 0.2,
+    stage: "render",
   }
 ])
 

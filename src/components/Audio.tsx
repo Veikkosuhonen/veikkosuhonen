@@ -122,6 +122,8 @@ export default function AudioPlayer() {
     gainNode = audioContext.createGain()
     mergerNode.connect(gainNode)
     gainNode.connect(audioContext.destination)
+
+    settings.forEach(s => onSettingsChange(s, s.value))
   })
 
   const setAudioSource = (file: File) => {
