@@ -51,6 +51,14 @@ export const [settings, setSettings] = createStore<Setting[]>([
     stage: "audio",
   },
   {
+    name: "microphoneGain",
+    min: 0,
+    max: 1,
+    value: 1.0,
+    step: 0.1,
+    stage: "audio",
+  },
+  {
     name: "freqScale",
     min: 7200,
     max: 17200,
