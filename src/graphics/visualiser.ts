@@ -1,4 +1,5 @@
 import { Accessor } from "solid-js"
+import { toast } from "~/components/Toasts"
 import { basicFragment, basicVertex, hdrFragment } from "~/shaders"
 import { Setting, settings } from "./settingsStore"
 
@@ -22,13 +23,15 @@ const createProgram = (gl: WebGL2RenderingContext, vertexSource: string, fragmen
 
   gl.shaderSource(vertexShader, vertexSource)
   gl.compileShader(vertexShader)
-  console.log(gl.getShaderInfoLog(vertexShader))
-  
+  let log = gl.getShaderInfoLog(vertexShader)
+  if (log) toast(log)
+
   const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
   if (!fragmentShader) throw new Error("Failed to create fshader")
   gl.shaderSource(fragmentShader, fragmentSource)
   gl.compileShader(fragmentShader)
-  console.log(gl.getShaderInfoLog(fragmentShader))
+  log = gl.getShaderInfoLog(fragmentShader)
+  if (log) toast(log)
 
   const program = gl.createProgram()
   if (!program) throw new Error("Failed to create program")
@@ -203,6 +206,7 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
 
   render()
 
+  toast("Graphics initialised")
 
 
   return () => {

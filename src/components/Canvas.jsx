@@ -1,6 +1,7 @@
 import { onCleanup, onMount } from "solid-js"
 import { getTimeDomainData } from "./Audio"
 import startRendering from "~/graphics/visualiser"
+import { toast } from "./Toasts"
 
 export default function Canvas() {
   let canvas
@@ -15,10 +16,13 @@ export default function Canvas() {
         name: "u_freq",
       },
     ]
-
-    cleanup = startRendering(
-      canvas, textures,
-    )
+    try {
+      cleanup = startRendering(
+        canvas, textures,
+      )
+    } catch (error) {
+      toast(error.message)
+    }
   })
 
   onCleanup(() => {

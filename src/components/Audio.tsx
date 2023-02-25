@@ -1,6 +1,7 @@
 import { Show, createResource, createSignal, For, onMount, Component, JSXElement, JSX } from "solid-js"
 import Slider from "./Slider"
 import { Setting, getValue, setValue, settings } from "../graphics/settingsStore"
+import { toast } from "./Toasts"
 
 let audioContext: AudioContext | null
 const analysers: Array<AnalyserNode | null> = [null, null]
@@ -37,14 +38,7 @@ const DeviceSelector: Component<{
 
   const [open, setOpen] = createSignal(false)
 
-  const [devices, {refetch}] = createResource(async () => {
-    console.log("looking for devices...")
-    const devices = await navigator.mediaDevices.enumerateDevices()
-    console.log("found devices: ", devices)
-    const audioDevices = devices.filter((d) => d.kind === "audioinput")
-    return audioDevices
-  }, { ssrLoadFrom: "initial", initialValue: [] })
-  onMount(() => refetch())
+  const [devices, setDevices] = createSignal<MediaDeviceInfo[]>([])
 
   const onSelect = (device: MediaDeviceInfo) => {
     props.selectDevice(device)
@@ -61,10 +55,29 @@ const DeviceSelector: Component<{
     }
   }
 
+  const loadDevices = async () => {
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    const audioDevices = devices.filter((d) => d.kind === "audioinput")
+    setDevices(audioDevices)
+  }
+
+  const onOpen = async () => {
+    setOpen(!open())
+    if (open()) {
+      loadDevices()
+    }
+  }
+
+  onMount(() => {
+    if (props.deviceId) {
+      loadDevices()
+    }
+  })
+
   return (
     <div class="relative">
-      <Button onClick={() => setOpen(!open())} isDown={!!props.deviceId}>{currentDevice()?.label ?? "Select input device"}</Button>
-      <Show when={open() && !devices.loading}>
+      <Button onClick={onOpen} isDown={!!props.deviceId}>{currentDevice()?.label ?? "Select input device"}</Button>
+      <Show when={open()}>
         <div class="absolute">
           <Surface>
             <For each={devices()}
@@ -86,14 +99,14 @@ export default function AudioPlayer() {
   let splitterNode: ChannelSplitterNode|null = null
   const [microphoneNode, setMicrophoneNode] = createSignal<MediaStreamAudioSourceNode|null>(null)
   let trackNode: MediaElementAudioSourceNode|null = null
-  let delayNode: DelayNode|null = null
+  let microphoneGainNode: GainNode|null = null
   let gainNode: GainNode|null = null
   const [microphoneOn, setMicrophoneOn] = createSignal(false)
   const [name, setName] = createSignal<string|null>(null)
   const [deviceId, { refetch: refetchDeviceId, mutate: mutateDeviceId }] = createResource<string|undefined>(() => {
     console.log("looking for device id from localstorage...")
     const deviceId = localStorage.getItem('deviceId') ?? undefined
-    if (deviceId) console.log("Using previous device ", deviceId)
+    if (deviceId) toast("Using saved device " + deviceId)
     return deviceId
   }, { ssrLoadFrom: "initial" })
 
@@ -123,7 +136,9 @@ export default function AudioPlayer() {
     mergerNode.connect(gainNode)
     gainNode.connect(audioContext.destination)
 
-    settings.forEach(s => onSettingsChange(s, s.value))
+    settings.forEach(s => onSliderChange(s, s.value))
+
+    toast("Audio initialised")
   })
 
   const setAudioSource = (file: File) => {
@@ -134,6 +149,7 @@ export default function AudioPlayer() {
     trackNode = audioContext?.createMediaElementSource(audio) ?? null
     if (trackNode && splitterNode && audioContext) {
       trackNode.connect(splitterNode)
+      toast(file.name + " ready to play")
     }
 
     audio.onended = () => setIsPlaying(false)
@@ -145,14 +161,14 @@ export default function AudioPlayer() {
       setMicrophoneOn(false)
       microphoneNode()?.disconnect()
       return
-    } else if (microphoneNode() && delayNode) {
-      microphoneNode()?.connect(delayNode)
+    } else if (microphoneNode() && microphoneGainNode) {
+      microphoneNode()?.connect(microphoneGainNode)
     }
     if (audioContext.state === "suspended") {
       audioContext.resume()
     }
 
-    if (!microphoneNode() && deviceId() && splitterNode && audioContext) {
+    if (!microphoneNode() && splitterNode && audioContext) {
       // access microphone
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -164,11 +180,15 @@ export default function AudioPlayer() {
 
       const microphoneNode = audioContext.createMediaStreamSource(mediaStream) ?? null
       if (microphoneNode) {
-        delayNode = audioContext.createDelay()
-        delayNode.delayTime.value = getValue("delay")
-        microphoneNode.connect(delayNode)
-        delayNode.connect(splitterNode)
+        microphoneGainNode = audioContext.createGain()
+        microphoneGainNode.gain.value = getValue("microphoneGain")
+        microphoneNode.connect(microphoneGainNode)
+        microphoneGainNode.connect(splitterNode)
+        toast("Microphone connected")
         setMicrophoneNode(microphoneNode)
+        setValue("volume", 0)
+        updateAudioSetting("volume", 0)
+        toast("Volume set to 0 to prevent feedback")
       }
     }
 
@@ -184,24 +204,28 @@ export default function AudioPlayer() {
       audioContext.resume()
     }
     if (!isPlaying()) {
-      console.log("playing now")
       audioElement.play()
       setIsPlaying(true)
     } else {
       audioElement.pause()
-      console.log("stopping now")
       setIsPlaying(false)
     }
   }
 
-  const onSettingsChange = (setting: Setting, value: number) => {
+  const onSliderChange = (setting: Setting, value: number) => {
     setValue(setting.name, value)
     if (setting.stage === "audio") {
-      analysers.forEach(a => a && Object.assign(a, { [setting.name]: value }))
-      if (delayNode && setting.name === "delay")
-        delayNode.delayTime.value = value
-      if (gainNode && setting.name === "volume")
-        gainNode.gain.value = value
+      updateAudioSetting(setting.name, value)
+    }
+  }
+
+  const updateAudioSetting = (name: string, value: number) => {
+    if (microphoneGainNode && name === "microphoneGain") {
+      microphoneGainNode.gain.value = value
+    } else if (gainNode && name === "volume") {
+      gainNode.gain.value = value
+    } else {
+      analysers.forEach(a => a && Object.assign(a, { [name]: value }))
     }
   }
 
@@ -214,26 +238,27 @@ export default function AudioPlayer() {
   const onDeviceSelect = (device: MediaDeviceInfo) => {
     localStorage.setItem("deviceId", device.deviceId)
     mutateDeviceId(device.deviceId)
+    toast("Selected device " + device.label)
   }
 
   return (
     <div class="flex flex-wrap items-stretch text-slate-300 text-sm gap-2">
       <div class="flex items-center p-4 backdrop-blur bg-zinc-900/30 border-zinc-900 border-2 rounded">
-        <button onClick={togglePlay} class={"bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-full shadow-lg p-1 w-16 text-center " + (isPlaying() ? "shadow-pink-600/20" : "")}>
+        <Button disabled={!audio()} onClick={togglePlay}>
           {isPlaying() ? "Pause" : "Play"}
-        </button>
+        </Button>
         <For each={settings}>{setting => 
-          <Slider setting={setting} disabled={!audio() && !microphoneNode()} onChange={onSettingsChange} />
+          <Slider setting={setting} disabled={!audio() && !microphoneNode()} onChange={onSliderChange} />
         }</For>
       </div>
 
-      <div class="flex flex-col items-center p-4 backdrop-blur bg-zinc-900/30 border-zinc-900 border-2 rounded-md">
+      <div class="flex flex-col items-center gap-1 p-4 backdrop-blur bg-zinc-900/30 border-zinc-900 border-2 rounded-md">
         <label for="audioFile" class={"bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-full shadow-lg px-2 py-1 cursor-pointer text-center " + (audio() ? "shadow-pink-600/20" : "")} >
           {name() ?? "Choose a file"}
           <input id="audioFile" type="file" onChange={onAudioUpload} accept="audio/*" class="hidden"/>
         </label>
         <DeviceSelector deviceId={deviceId()} selectDevice={onDeviceSelect} />
-        <Button onClick={toggleMicrophone} disabled={!deviceId() || !audioContext}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
+        <Button onClick={toggleMicrophone} disabled={false}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
       </div>
       <div class="flex items-center px-16 select-none">
         <h1 class="first-letter:font-extrabold first-letter:text-pink-800 text-4xl font-light">
