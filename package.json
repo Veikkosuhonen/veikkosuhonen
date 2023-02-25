@@ -18,8 +18,10 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "dependencies": {
+    "@solid-primitives/mouse": "^2.0.6",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.7.0",
+    "classnames": "^2.3.2",
     "solid-js": "^1.6.9",
     "solid-start": "^0.2.0",
     "undici": "^5.11.0"

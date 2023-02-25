@@ -1,9 +1,11 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@solid-primitives/mouse': ^2.0.6
   '@solidjs/meta': ^0.28.2
   '@solidjs/router': ^0.7.0
   autoprefixer: ^10.4.13
+  classnames: ^2.3.2
   eslint: ^8.33.0
   eslint-plugin-solid: ^0.9.4
   postcss: ^8.4.21
@@ -17,8 +19,10 @@ specifiers:
   vite-plugin-eslint: ^1.8.1
 
 dependencies:
+  '@solid-primitives/mouse': 2.0.6_solid-js@1.6.10
   '@solidjs/meta': 0.28.2_solid-js@1.6.10
   '@solidjs/router': 0.7.0_solid-js@1.6.10
+  classnames: 2.3.2
   solid-js: 1.6.10
   solid-start: 0.2.20_huyypa3hrjsz4cu4l7m46zktda
   undici: 5.18.0
@@ -1364,6 +1368,43 @@ packages:
   /@sideway/pinpoint/2.0.0:
     resolution: {integrity: sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==}
 
+  /@solid-primitives/event-listener/2.2.6_solid-js@1.6.10:
+    resolution: {integrity: sha512-Lb2q888Apv8wqgZ3WvPlt8ic2rEmHx6QT8d3pgi+JRSIRNwAysE6PZDmbwT6/hzzP1TIQG0IRZwh5tomfuqlaQ==}
+    peerDependencies:
+      solid-js: ^1.6.0
+    dependencies:
+      '@solid-primitives/utils': 5.2.0_solid-js@1.6.10
+      solid-js: 1.6.10
+    dev: false
+
+  /@solid-primitives/mouse/2.0.6_solid-js@1.6.10:
+    resolution: {integrity: sha512-8JNchktUiLp8ScO1Mn3kPdGVV2fCy2vqLAm7pXZbW4o8GlZAIlfISoh47aRXRxVtCD34tiigFldKoCy62qeZZg==}
+    peerDependencies:
+      solid-js: ^1.6.0
+    dependencies:
+      '@solid-primitives/event-listener': 2.2.6_solid-js@1.6.10
+      '@solid-primitives/rootless': 1.2.4_solid-js@1.6.10
+      '@solid-primitives/utils': 5.2.0_solid-js@1.6.10
+      solid-js: 1.6.10
+    dev: false
+
+  /@solid-primitives/rootless/1.2.4_solid-js@1.6.10:
+    resolution: {integrity: sha512-wsxpJzmCTeKt7gM1sDN3aKs5Sb8dmD3xVBdXUA+xZWcO5v/CVR5Gq690YvXvWSK+Thjv8jvDNHI582CDP/gFzQ==}
+    peerDependencies:
+      solid-js: ^1.6.11
+    dependencies:
+      '@solid-primitives/utils': 5.2.0_solid-js@1.6.10
+      solid-js: 1.6.10
+    dev: false
+
+  /@solid-primitives/utils/5.2.0_solid-js@1.6.10:
+    resolution: {integrity: sha512-9sJSBv0IshaQ6qks9FW9ErKZS9qeAv+uYYrsAAXnu5XtDeifRtMk0k6Smje4XxzpxGH/8P4nwS2kk/9vt6KsBg==}
+    peerDependencies:
+      solid-js: ^1.6.0
+    dependencies:
+      solid-js: 1.6.10
+    dev: false
+
   /@solidjs/meta/0.28.2_solid-js@1.6.10:
     resolution: {integrity: sha512-avlLgBPdk4KVxzRGFlYp/MIJo8B5jVgXPgk6OUnUP8km21Z+ovO+DUd7ZPA7ejv8PBdWi9GE3zCzw8RU2YuV2Q==}
     peerDependencies:
@@ -1801,6 +1842,10 @@ packages:
   /chownr/2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+
+  /classnames/2.3.2:
+    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
+    dev: false
 
   /cliui/8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
