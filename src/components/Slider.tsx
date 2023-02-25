@@ -1,14 +1,14 @@
 import { Component, For, createEffect, createSignal, onMount } from "solid-js"
 import { Setting } from "../graphics/settingsStore"
 import cn from "classnames"
-import { createPositionToElement, useMousePosition } from "@solid-primitives/mouse";
+import { useMousePosition } from "@solid-primitives/mouse";
 
 const [dragStart, setDragStart] = createSignal<number>(0)
 
 const Slider: Component<{
   setting: Setting,
   disabled: boolean,
-  onChange: (s: Setting, v: number) => {}
+  onChange: (s: Setting, v: number) => void
 }> = (props) => {
   const initialOffset = 100 - (props.setting.value - props.setting.min) / (props.setting.max - props.setting.min) * 100
   const [offset, setOffset] = createSignal<number>(initialOffset)
@@ -16,12 +16,10 @@ const Slider: Component<{
   const [isDragging, setIsDragging] = createSignal<boolean>(false)
   const [isHover, setIsHover] = createSignal<boolean>(false)
   
-  onMount(() => {
-    addEventListener("mouseup", () => {
-      setIsDragging(false)
-      setPreviousOffset(offset())
-    })
-  })
+  const stopDrag = () => {
+    setIsDragging(false)
+    setPreviousOffset(offset())
+  }
 
   const pos = useMousePosition()
 
@@ -44,6 +42,9 @@ const Slider: Component<{
   const onMouseDown = () => {
     setDragStart(pos.y)
     setIsDragging(true)
+    addEventListener("mouseup", stopDrag, { once: true })
+    addEventListener("dragend", stopDrag, { once: true })
+    addEventListener("touchend", stopDrag, { once: true })
     dragUpdate()
   }
 
@@ -51,11 +52,11 @@ const Slider: Component<{
 
   return (
     <div class="w-16 flex flex-col items-center mb-2" onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)} draggable={false}>
-      <div class="relative flex justify-center h-[140px] w-10 overflow-y-hidden overflow-x-hidden cursor-pointer" onMouseDown={onMouseDown} draggable={false}>
+      <div class="relative flex justify-center h-[140px] w-10 overflow-y-hidden overflow-x-hidden cursor-pointer" onMouseDown={onMouseDown} onTouchStart={onMouseDown} draggable={false}>
 
         <div class={`absolute flex flex-col items-center gap-[9px] -z-10 justify-self-start py-[14px] w-7
           [&>*:nth-child(even)]:w-7
-          [&>*:nth-child(odd)]:w-5
+          [&>*:nth-child(odd)]:w-6
         `}>
           <For each={ticks}>{t => 
             <div class={cn("w-6 border-t-2 border-pink-500 transition-opacity duration-300", (Math.round(offset()/10) === t) ? "opacity-80" : (isHover() || isDragging() ? "opacity-20" : "opacity-10"))}/>
