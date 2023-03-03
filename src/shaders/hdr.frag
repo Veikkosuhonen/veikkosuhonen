@@ -6,7 +6,7 @@ uniform float u_gamma;
 uniform float u_exposure;
 
 void main() {
-    vec2 st = gl_FragCoord.st / u_resolution.st;
+    vec2 st = gl_FragCoord.st / u_resolution;
 
     vec3 hdrColor = texture2D(u_texture, st).rgb;
 

@@ -8,7 +8,7 @@ export default function CanvasContainer() {
 
   return (
     <div class="bg-blue border border-b-8 border-zinc-900 relative h-full flex flex-col">
-      <div class="object-left-bottom absolute m-4">
+      <div class="object-left-bottom absolute w-full overflow-hidden">
         <AudioPlayer />
         <Toasts />
       </div>

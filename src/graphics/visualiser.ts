@@ -1,9 +1,9 @@
-import { Accessor } from "solid-js"
+import { createSignal } from "solid-js"
 import { toast } from "~/components/Toasts"
-import { basicFragment, basicVertex, hdrFragment } from "~/shaders"
+import { basicFragment, basicVertex, hdrFragment } from "../shaders"
 import { Setting, settings } from "./settingsStore"
 
-type TextureConfig = {
+export type TextureConfig = {
   name: string,
   size: [number, number],
   provider: () => ArrayBufferView
@@ -16,6 +16,9 @@ const setProgramUniforms = (gl: WebGL2RenderingContext, program: WebGLProgram, s
     gl.uniform1f(ul, value)
   }
 }
+
+export const [canvasSize, setCanvasSize] = createSignal<number[]>([1280, 1080])
+export const [drawBufferSize, setDrawBufferSize] = createSignal<number[]>([1080, 1080])
 
 const createProgram = (gl: WebGL2RenderingContext, vertexSource: string, fragmentSource: string) => {
   const vertexShader = gl.createShader(gl.VERTEX_SHADER)
@@ -77,8 +80,8 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
   gl.bindTexture(gl.TEXTURE_2D, hdrTexture)
   const level = 0
   const internalFormat = gl.RGBA16F
-  const width = 1280
-  const height = 720
+  const width = 1080
+  const height = 1080
   const border = 0
   const srcFormat = gl.RGBA
   const srcType = gl.HALF_FLOAT
@@ -166,9 +169,14 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
 
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
+    
+    const [w, h] = canvasSize()
+    const [dbw, dbh] = drawBufferSize()
   
     let ul = gl.getUniformLocation(program, "u_resolution")
-    gl.uniform2f(ul, 1280, 720)
+    gl.uniform2f(ul, dbw, dbh)
+    ul = gl.getUniformLocation(program, "u_canvasSize")
+    gl.uniform2f(ul, w, h)
     ul = gl.getUniformLocation(program, "u_time")
     gl.uniform1f(ul, (Date.now() - start) / 1000.0)
     
@@ -186,9 +194,11 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
 
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
-  
+    
+    
     ul = gl.getUniformLocation(hdrProgram, "u_resolution")
-    gl.uniform2f(ul, 1280, 720)
+    gl.uniform2f(ul, dbw, dbh)
+    
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, hdrTexture)

@@ -6,7 +6,7 @@ export type Setting = {
   max: number,
   name: string,
   step: number,
-  stage: "post" | "render" | "audio"
+  stage: "post" | "render" | "audio",
 }
 
 export const [settings, setSettings] = createStore<Setting[]>([
@@ -14,7 +14,7 @@ export const [settings, setSettings] = createStore<Setting[]>([
     name: "minDecibels",
     min: -110,
     max: -30,
-    value: -70,
+    value: -80,
     step: 10,
     stage: "audio",
   },
@@ -22,13 +22,13 @@ export const [settings, setSettings] = createStore<Setting[]>([
     name: "maxDecibels",
     min: -60,
     max: 30,
-    value: -10,
+    value: -20,
     step: 10,
     stage: "audio",
   },
   {
     name: "smoothingTimeConstant",
-    min: 0.4,
+    min: 0.1,
     max: 0.9,
     value: 0.1,
     step: 0.1,
@@ -78,7 +78,7 @@ export const [settings, setSettings] = createStore<Setting[]>([
     name: "deformation",
     min: 0.0,
     max: 6.0,
-    value: 0.8,
+    value: 0.0,
     step: 0.1,
     stage: "render",
   },
@@ -121,7 +121,7 @@ export const [settings, setSettings] = createStore<Setting[]>([
     step: 0.05,
     value: 0.2,
     stage: "render",
-  }
+  },
 ])
 
 export const setValue = (name: string, newValue: number) => {

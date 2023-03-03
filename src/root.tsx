@@ -1,7 +1,6 @@
 // @refresh reload
 import { Suspense } from "solid-js"
 import {
-  useLocation,
   A,
   Body,
   ErrorBoundary,
@@ -13,13 +12,10 @@ import {
   Scripts,
   Title,
 } from "solid-start"
+import NavBar from "./components/NavBar"
 import "./root.css"
 export default function Root() {
-  const location = useLocation()
-  const active = (path) =>
-    path == location.pathname
-      ? "border-pink-800"
-      : "border-transparent hover:border-pink-800"
+  
   return (
     <Html lang="en" class="h-full">
       <Head>
@@ -30,13 +26,7 @@ export default function Root() {
       <Body class="bg-zinc-900 m-0 h-full flex flex-col">
         <Suspense>
           <ErrorBoundary>
-            <nav class="bg-zinc-900">
-              <ul class="container flex items-center p-3 text-gray-200">
-                <li class={`border-b-2 ${active("/")} mx-1.5 sm:mx-6`}>
-                  <A href="/">Music visualizer</A>
-                </li>
-              </ul>
-            </nav>
+            <NavBar />
             <Routes>
               <FileRoutes />
             </Routes>

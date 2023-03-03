@@ -7,6 +7,7 @@ const float TWO_PI = 6.28318530718;
 const float HALF_PI = 1.57079632679;
 
 uniform vec2 u_resolution;
+uniform vec2 u_canvasSize;
 uniform float u_time;
 uniform float u_hue;
 uniform float u_brightness;
@@ -74,8 +75,29 @@ float fetchKey(float key, float channel) {
 }
 
 void main() {
-  vec2 stc = gl_FragCoord.st / u_resolution.tt;
-  stc -= vec2((u_resolution.s / u_resolution.t) * 0.5, 0.5);
+
+  vec2 fragCoord = gl_FragCoord.st;
+
+  vec2 aspectDiff = u_canvasSize.st / u_resolution;
+
+  vec2 st = fragCoord / u_resolution;
+
+  float scaling = min(u_resolution.s, u_resolution.t) / min(u_canvasSize.s, u_canvasSize.t);
+  vec2 stScaled = st * aspectDiff * scaling;
+
+
+  // Center along longer axis
+  vec2 centering = u_canvasSize.s > u_canvasSize.t 
+    ? vec2((u_canvasSize.s - u_canvasSize.t) / u_resolution.s, 0.0) 
+    : vec2(0.0, (u_canvasSize.t - u_canvasSize.s) / u_resolution.t);
+
+  stScaled -= centering * scaling * 0.5;
+
+
+  // move drawing origin to center
+  vec2 stc = stScaled - vec2(0.5);
+
+
   float r = sqrt(stc.x * stc.x + stc.y * stc.y) * 2.0;
   float phi = mod(atan(stc.y, stc.x) + HALF_PI, TWO_PI) / TWO_PI;
 
@@ -99,7 +121,7 @@ void main() {
   amp = exp(amp) - 1.0;
 
   float distanceFromCenter = abs(r - 0.4) * (1.0 + step(r - 0.4, 0.0) * 3.0);
-  float barHeight = amp * 0.5;
+  float barHeight = amp * 0.7;
   // float barStrength = timeDomain;
 
   float alpha = step(distanceFromCenter, barHeight);
@@ -117,6 +139,9 @@ void main() {
 
   color = mix(color * coreBrightness, vec3(1.0), coreBrightness * 0.01);
   color = mix(vec3(0.0), color, a);
+
+  // color += (1.0 - step(0.0, stScaled.x) * step(stScaled.x, 1.0)) * vec3(0.0, 1.0, 0.0);
+  // color += (1.0 - step(0.0, stScaled.y) * step(stScaled.y, 1.0)) * vec3(1.0, 0.0, 0.0);
 
   gl_FragColor = vec4(color, a);
 }

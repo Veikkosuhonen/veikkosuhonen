@@ -229,29 +229,32 @@ export default function AudioPlayer() {
   }
 
   return (
-    <div class="flex flex-wrap items-stretch text-slate-300 text-sm gap-2">
+    <div class="flex flex-wrap items-stretch text-slate-300 text-sm w-full pt-4">
+      <div class="overflow-x-auto pl-4 mb-2">
+        <Surface>
+          <div class="flex items-center">
+            <Button disabled={!audio()} onClick={togglePlay}>
+              {isPlaying() ? "Pause" : "Play"}
+            </Button>
+            <For each={settings}>{setting => 
+              <Slider setting={setting} disabled={!audio() && !microphoneNode()} onChange={onSliderChange} />
+            }</For>
+          </div>
+        </Surface>
+      </div>
 
-      <Surface>
-        <div class="flex items-center">
-          <Button disabled={!audio()} onClick={togglePlay}>
-            {isPlaying() ? "Pause" : "Play"}
-          </Button>
-          <For each={settings}>{setting => 
-            <Slider setting={setting} disabled={!audio() && !microphoneNode()} onChange={onSliderChange} />
-          }</For>
-        </div>
-      </Surface>
-      
-      <Surface>
-        <div class="flex flex-col items-center gap-1">
-          <label for="audioFile" class={"select-none bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-md shadow-lg px-2 py-1 cursor-pointer text-center " + (audio() ? "shadow-pink-600/20" : "")} >
-            {name() ?? "Choose a file"}
-            <input id="audioFile" type="file" onChange={onAudioUpload} accept="audio/*" class="hidden"/>
-          </label>
-          <DeviceSelector deviceId={deviceId()} selectDevice={onDeviceSelect} />
-          <Button onClick={toggleMicrophone} disabled={false}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
-        </div>
-      </Surface>
+      <div class="pl-4">
+        <Surface>
+          <div class="flex flex-col items-center gap-1">
+            <label for="audioFile" class={"select-none bg-zinc-900 border border-zinc-800 hover:border-pink-800 rounded-md shadow-lg px-2 py-1 cursor-pointer text-center " + (audio() ? "shadow-pink-600/20" : "")} >
+              {name() ?? "Choose a file"}
+              <input id="audioFile" type="file" onChange={onAudioUpload} accept="audio/*" class="hidden"/>
+            </label>
+            <DeviceSelector deviceId={deviceId()} selectDevice={onDeviceSelect} />
+            <Button onClick={toggleMicrophone} disabled={false}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
+          </div>
+        </Surface>
+      </div>
   
       <div class="flex items-center px-16 select-none">
         <h1 class="first-letter:font-extrabold first-letter:text-pink-800 text-4xl font-light">
