@@ -1,13 +1,9 @@
 import { createSignal } from "solid-js"
+import { getFrequencyData } from "~/components/Audio"
 import { toast } from "~/components/Toasts"
 import { basicFragment, basicVertex, hdrFragment } from "../shaders"
+import { createFrameBuffer, createProgram, TextureFormat } from "./glUtils"
 import { Setting, settings } from "./settingsStore"
-
-export type TextureConfig = {
-  name: string,
-  size: [number, number],
-  provider: () => ArrayBufferView
-}
 
 const setProgramUniforms = (gl: WebGL2RenderingContext, program: WebGLProgram, settings: Setting[], stage: "render" | "post") => {
   for (const { name, value } of settings.filter(u => u.stage === stage)) {
@@ -20,34 +16,7 @@ const setProgramUniforms = (gl: WebGL2RenderingContext, program: WebGLProgram, s
 export const [canvasSize, setCanvasSize] = createSignal<number[]>([1280, 1080])
 export const [drawBufferSize, setDrawBufferSize] = createSignal<number[]>([1080, 1080])
 
-const createProgram = (gl: WebGL2RenderingContext, vertexSource: string, fragmentSource: string) => {
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-  if (!vertexShader) throw new Error("Failed to create vshader")
-
-  gl.shaderSource(vertexShader, vertexSource)
-  gl.compileShader(vertexShader)
-  let log = gl.getShaderInfoLog(vertexShader)
-  if (log) toast(log)
-
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-  if (!fragmentShader) throw new Error("Failed to create fshader")
-  gl.shaderSource(fragmentShader, fragmentSource)
-  gl.compileShader(fragmentShader)
-  log = gl.getShaderInfoLog(fragmentShader)
-  if (log) toast(log)
-
-  const program = gl.createProgram()
-  if (!program) throw new Error("Failed to create program")
-  gl.attachShader(program, vertexShader)
-  gl.attachShader(program, fragmentShader)
-  gl.linkProgram(program)
-
-  return program
-}
-
-
-
-const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) => {
+const startRendering = (canvas: HTMLCanvasElement) => {
   const gl: WebGL2RenderingContext|null = canvas.getContext("webgl2")
   if (!gl) throw new Error("WebGL2 not supported")
   gl.getExtension("EXT_color_buffer_float")
@@ -73,98 +42,87 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
 
 
   /**
-   * Framebuffer setup
+   * Ping pong data buffers setup
    */
-  // texture setup
-  const hdrTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, hdrTexture)
-  const level = 0
-  const internalFormat = gl.RGBA16F
-  const width = 1080
-  const height = 1080
-  const border = 0
-  const srcFormat = gl.RGBA
-  const srcType = gl.HALF_FLOAT
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    level,
-    internalFormat,
-    width,
-    height,
-    border,
-    srcFormat,
-    srcType,
-    null
-  )
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-  // fbo setup
-  const hdrFbo = gl.createFramebuffer()
-  gl.bindFramebuffer(gl.FRAMEBUFFER, hdrFbo)
-  gl.framebufferTexture2D(
-    gl.FRAMEBUFFER,
-    gl.COLOR_ATTACHMENT0,
-    gl.TEXTURE_2D,
-    hdrTexture,
-    0,
-  )
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  const {
+    texture: dataTexture1,
+    frameBuffer: dataFbo1
+  } = createFrameBuffer(gl, 1024, 256, TextureFormat.Byte)
+  const {
+    texture: dataTexture2,
+    frameBuffer: dataFbo2
+  } = createFrameBuffer(gl, 1024, 256, TextureFormat.Byte)
 
-
-  const textureUpdaters = textures.map((textureConfig, index) => {
-    const texture = gl.createTexture()
-
-    // gl.activeTexture(gl.TEXTURE0 + index)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE)
-
-    const updater = {
-      texture,
-      update() {
-        gl.activeTexture(gl.TEXTURE0 + index)
-        gl.bindTexture(gl.TEXTURE_2D, texture)
-        const level = 0
-        const internalFormat = gl.RGBA
-        const width = 512
-        const height = 2
-        const border = 0
-        const srcFormat = gl.RGBA
-        const srcType = gl.UNSIGNED_BYTE
-        const data = textureConfig.provider()
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          level,
-          internalFormat,
-          width,
-          height,
-          border,
-          srcFormat,
-          srcType,
-          data
-        )
-
-        const ul = gl.getUniformLocation(program, textureConfig.name)
-        gl.uniform1i(ul, index)
-      }
+  let firstDataFbo = true
+  const currentDataTexture = () => {
+    firstDataFbo = !firstDataFbo
+    return firstDataFbo ? {
+      texture: dataTexture1,
+      source: dataFbo2,
+      target: dataFbo1,
+    } : {
+      texture: dataTexture2,
+      source: dataFbo1,
+      target: dataFbo2,
     }
-
-    return updater
-  })
+  }
 
 
+  /**
+   * Hdr framebuffer setup
+   */
+  const {
+    texture: hdrTexture,
+    frameBuffer: hdrFbo
+  } = createFrameBuffer(gl, 1080, 1080, TextureFormat.Float)
 
+  const updateData = () => {
+    const { texture: dataTexture, source, target } = currentDataTexture()
+    
+    gl.activeTexture(gl.TEXTURE0 + 0)
+    gl.bindTexture(gl.TEXTURE_2D, dataTexture)
+  
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, source)
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, target)
+    gl.blitFramebuffer(/*src*/ 0, 0, 1024, 255, /*target*/ 0, 1, 1024, 256, gl.COLOR_BUFFER_BIT, gl.NEAREST)
+  
+    const level = 0
+    const xoffset = 0
+    const yoffset = 0
+    const width = 1024
+    const height = 1
+    const srcFormat = gl.RGBA
+    const srcType = gl.UNSIGNED_BYTE
+    const data = getFrequencyData()
+    const srcOffset = 0
+    gl.texSubImage2D(
+      gl.TEXTURE_2D,
+      level,
+      xoffset,
+      yoffset,
+      width,
+      height,
+      srcFormat,
+      srcType,
+      data,
+      srcOffset
+    )
+
+    
+  }
 
   const start = Date.now()
 
   const render = () => {
+    updateData()
+    
     /**
      * Render to buffer
      */
     gl.useProgram(program)
+    let ul = gl.getUniformLocation(program, "u_freq")
+    gl.uniform1i(ul, 0)
+    
     gl.bindFramebuffer(gl.FRAMEBUFFER, hdrFbo)
 
     gl.clearColor(0, 0, 0, 0)
@@ -173,7 +131,7 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
     const [w, h] = canvasSize()
     const [dbw, dbh] = drawBufferSize()
   
-    let ul = gl.getUniformLocation(program, "u_resolution")
+    ul = gl.getUniformLocation(program, "u_resolution")
     gl.uniform2f(ul, dbw, dbh)
     ul = gl.getUniformLocation(program, "u_canvasSize")
     gl.uniform2f(ul, w, h)
@@ -181,8 +139,6 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
     gl.uniform1f(ul, (Date.now() - start) / 1000.0)
     
     setProgramUniforms(gl, program, settings, "render")
-  
-    textureUpdaters.forEach(updater => updater.update())
   
     gl.drawArrays(gl.TRIANGLES, 0, 6)
     
@@ -210,7 +166,6 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
 
-
     requestAnimationFrame(render)
   }
 
@@ -221,12 +176,7 @@ const startRendering = (canvas: HTMLCanvasElement, textures: TextureConfig[]) =>
 
   return () => {
     console.log("cleaning up webgl resources")
-    gl.deleteProgram(program)
-    textureUpdaters.forEach((updater, index) => {
-      gl.activeTexture(gl.TEXTURE0 + index)
-      gl.bindTexture(gl.TEXTURE_2D, null)
-      gl.deleteTexture(updater.texture)
-    })
+    
   }
 }
 

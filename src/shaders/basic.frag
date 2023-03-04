@@ -14,8 +14,8 @@ uniform float u_brightness;
 uniform sampler2D u_freq;
 uniform float u_freqScale;
 uniform float u_freqRange;
-uniform float u_deformation;
-uniform float u_deformationFrequency;
+uniform float u_ringRadius;
+uniform float u_speed;
 
 vec3 hsv2rgb(vec3 c) {
   vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -65,13 +65,26 @@ float noteFrequency(float key) {
   return pow(2.0, (key - 49.0) / 12.0) * 440.0;
 }
 
-float fetchKey(float key, float channel) {
+float fetchKey(float key, float channel, float r) {
   float noteFreq = noteFrequency(key);
   float stx = noteFreq / u_freqScale;
-  vec4 data = texture2D(u_freq, vec2(stx, channel));
+  vec4 data = texture2D(u_freq, vec2(stx + channel * 0.5, r));
   float x = stx * DATA_LENGTH * ELEMENTS_PER_TEXEL;
   float amp = getComponent(data, x);
   return amp;
+}
+
+float fetchKey(float key, float channel) {
+  return fetchKey(key, channel, 0.0);
+}
+
+vec3 spectrogramBackground(float key, float angle, float channel, float r) {
+  float y = r * u_speed;
+  float amp = fetchKey(key, channel, y);
+  amp = exp(amp) - 1.0;
+  amp *= log(angle + 2.5);
+  amp = pow(amp, 5.0) * 0.3 * max((1.0 - y), 0.0);
+  return vec3(0.2, 0.0275, 0.3412) * amp * step(0.0001, y) * step(y, 1.0);
 }
 
 void main() {
@@ -103,28 +116,22 @@ void main() {
 
   float angle = phi > 0.5 ? (1.0 - phi) * 2.0 : phi * 2.0;
   float key = angle * 88.0 * u_freqRange;
-  float noteFreq = noteFrequency(key);
-  float stx = noteFreq / u_freqScale;
 
-  float channel = phi > 0.5 ? 0.99 : 0.01;
-
-  r += 
-    (+ sin(phi * TWO_PI * 13.0 + u_time)* fetchKey(13.0 * u_deformationFrequency, 0.0) * 0.02
-    + sin(phi * TWO_PI * 7.0 + u_time)* fetchKey(7.0 * u_deformationFrequency, 0.0) * 0.03
-    + sin(phi * TWO_PI * 5.0 + u_time)* fetchKey(5.0 * u_deformationFrequency, 0.0) * 0.04
-    + sin(phi * TWO_PI * 3.0 + u_time)* fetchKey(3.0 * u_deformationFrequency, 0.0) * 0.04
-    - fetchKey(9.0, 0.0) * 0.03) * u_deformation;
+  float channel = phi > 0.5 ? 1.0 : 0.0;
   
   float amp = fetchKey(key, channel) + 0.02;
   // freq -= 0.3 * step(0.5, u_channel);
-  amp *= log(stx + 2.0);
+  amp *= log(angle + 3.0) * 0.5;
   amp = exp(amp) - 1.0;
 
-  float distanceFromCenter = abs(r - 0.4) * (1.0 + step(r - 0.4, 0.0) * 3.0);
+  float radius = u_ringRadius;
+  float distanceFromRing = max(r - radius, 0.0);
+
+  float barDistanceFromRing = abs(r - radius) * (1.0 + step(r - radius, 0.0) * 3.0);
   float barHeight = amp * 0.7;
   // float barStrength = timeDomain;
 
-  float alpha = step(distanceFromCenter, barHeight);
+  float alpha = step(barDistanceFromRing, barHeight);
   float a = alpha;
 
   vec3 innerColor = mix(vec3(0.0078, 0.2196, 0.0941), vec3(0.0863, 0.7098, 0.4902), amp * 2.0 - 0.4);
@@ -133,15 +140,14 @@ void main() {
   innerColor = hueShift(innerColor, -(angle + u_hue) * 2.);
   outerColor = hueShift(outerColor, -(angle + u_hue) * 2.);
 
-  vec3 color = mix(innerColor, outerColor, (1.0 - (barHeight - distanceFromCenter) / barHeight));
+  vec3 color = mix(innerColor, outerColor, (1.0 - (barHeight - barDistanceFromRing) / barHeight));
 
-  float coreBrightness = min(amp * 0.3 * u_brightness / max((distanceFromCenter * (1.0 - amp * 0.1)), 0.001), 30.0);
+  float coreBrightness = min(amp * 0.3 * u_brightness / max((barDistanceFromRing * (1.0 - amp * 0.1)), 0.001), 30.0);
 
   color = mix(color * coreBrightness, vec3(1.0), coreBrightness * 0.01);
   color = mix(vec3(0.0), color, a);
 
-  // color += (1.0 - step(0.0, stScaled.x) * step(stScaled.x, 1.0)) * vec3(0.0, 1.0, 0.0);
-  // color += (1.0 - step(0.0, stScaled.y) * step(stScaled.y, 1.0)) * vec3(1.0, 0.0, 0.0);
+  color += spectrogramBackground(key, angle, channel, distanceFromRing);
 
-  gl_FragColor = vec4(color, a);
+  gl_FragColor = vec4(color, 1.0);
 }

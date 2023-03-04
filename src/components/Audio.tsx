@@ -11,7 +11,7 @@ let dataArray1 = new Uint8Array(4096)
 let dataArray2 = new Uint8Array(2048)
 // let bufferLength
 
-export const getTimeDomainData = () => {
+export const getFrequencyData = () => {
   analysers[0]?.getByteFrequencyData(dataArray1)
   analysers[1]?.getByteFrequencyData(dataArray2)
   dataArray1.set(dataArray2, 2048)

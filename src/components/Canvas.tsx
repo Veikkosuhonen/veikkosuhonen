@@ -1,6 +1,5 @@
 import { onCleanup, onMount } from "solid-js"
-import { getTimeDomainData } from "./Audio"
-import startRendering, { setCanvasSize, TextureConfig } from "~/graphics/visualiser"
+import startRendering, { setCanvasSize } from "~/graphics/visualiser"
 import { toast } from "./Toasts"
 
 export default function Canvas() {
@@ -17,18 +16,9 @@ export default function Canvas() {
 
   onMount(() => {
 
-    const textures: TextureConfig[] = [
-      {
-        size: [512, 2],
-        provider: () => getTimeDomainData(),
-        name: "u_freq",
-      },
-    ]
     try {
       if (canvas) {
-        cleanup = startRendering(
-          canvas, textures,
-        )
+        cleanup = startRendering(canvas)
 
         addEventListener("resize", resize)
         resize()
