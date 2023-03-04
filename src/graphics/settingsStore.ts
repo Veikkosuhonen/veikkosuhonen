@@ -69,7 +69,7 @@ export const [settings, setSettings] = createStore<Setting[]>([
   {
     name: "freqRange",
     min: 0.1,
-    max: 1.2,
+    max: 1.0,
     value: 0.8,
     step: 0.1,
     stage: "render",

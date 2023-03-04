@@ -77,7 +77,7 @@ const Slider: Component<{
         <div class="w-2 shadow-inner shadow-black/50 bg-slate-800 rounded flex flex-col items-center mt-2"/>
 
         <div class="rotate-90 translate-x-5 relative w-0 h-0 overflow-x-visible" draggable={false}>
-          <span class={cn("select-none text-slate-600 absolute", isHover() || isDragging() ? "opacity-100" : "opacity-70" )}>{props.setting.name}</span>
+          <span class={cn("select-none text-slate-500 absolute", isHover() || isDragging() ? "opacity-100" : "opacity-70" )}>{props.setting.name}</span>
         </div>
 
         <div class="absolute flex flex-col items-center" style={{ top: `${offset() * 0.83}%` }}>
@@ -94,7 +94,7 @@ const Slider: Component<{
         
       </div>
       
-      <span class={cn("select-none text-slate-600 transition-opacity duration-200", isHover() || isDragging() ? "opacity-100" : "opacity-70" )}>{Number(props.setting.value).toFixed(1)}</span>
+      <span class={cn("select-none text-slate-500 transition-opacity duration-200", isHover() || isDragging() ? "opacity-100" : "opacity-70" )}>{Number(props.setting.value).toFixed(1)}</span>
     </div>
   )
 }

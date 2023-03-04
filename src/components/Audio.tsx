@@ -109,8 +109,8 @@ export default function AudioPlayer() {
     splitterNode = audioContext.createChannelSplitter(2)
     analysers[0] = audioContext.createAnalyser()
     analysers[1] = audioContext.createAnalyser()
-    analysers[0].fftSize = 4096
-    analysers[1].fftSize = 4096
+    analysers[0].fftSize = 8192
+    analysers[1].fftSize = 8192
 
     splitterNode.connect(analysers[0], 0)
     splitterNode.connect(analysers[1], 1)

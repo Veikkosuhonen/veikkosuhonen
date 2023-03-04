@@ -83,7 +83,7 @@ vec3 spectrogramBackground(float key, float angle, float channel, float r) {
   float amp = fetchKey(key, channel, y);
   amp = exp(amp) - 1.0;
   amp *= log(angle + 2.5);
-  amp = pow(amp, 5.0) * 0.3 * max((1.0 - y), 0.0);
+  amp = pow(amp, 6.0) * 0.2 * max((1.0 - y), 0.0);
   return vec3(0.2, 0.0275, 0.3412) * amp * step(0.0001, y) * step(y, 1.0);
 }
 
