@@ -39,8 +39,8 @@ const Slider: Component<{
     }
   })
 
-  const onMouseDown = () => {
-    setDragStart(pos.y)
+  const onDragStart = (y: number) => {
+    setDragStart(y)
     setIsDragging(true)
     addEventListener("mouseup", stopDrag, { once: true })
     addEventListener("dragend", stopDrag, { once: true })
@@ -48,11 +48,21 @@ const Slider: Component<{
     dragUpdate()
   }
 
+  const onTouchDown = (e: TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch) return
+    onDragStart(touch.pageY)
+  }
+
+  const onMouseDown = () => {
+    onDragStart(pos.y)
+  }
+
   const ticks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
   return (
     <div class="w-16 flex flex-col items-center mb-2" onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)} draggable={false}>
-      <div class="relative flex justify-center h-[140px] w-10 overflow-y-hidden overflow-x-hidden cursor-pointer" onMouseDown={onMouseDown} onTouchStart={onMouseDown} draggable={false}>
+      <div class="relative flex justify-center h-[140px] w-10 overflow-y-hidden overflow-x-hidden cursor-pointer" onMouseDown={onMouseDown} onTouchStart={onTouchDown} draggable={false}>
 
         <div class={`absolute flex flex-col items-center gap-[9px] -z-10 justify-self-start py-[14px] w-7
           [&>*:nth-child(even)]:w-7
