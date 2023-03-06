@@ -256,12 +256,12 @@ export default function AudioPlayer() {
         </Surface>
       </div>
   
-      <div class="flex items-center px-16 select-none">
-        <h1 class="first-letter:font-extrabold first-letter:text-pink-800 text-4xl font-light">
+      <div class="flex items-center p-10 select-none">
+        <h1 class="first-letter:font-extrabold first-letter:text-pink-800 text-2xl font-light">
           VISUALIZER
         </h1>
         <div class="flex flex-col pl-4 text-slate-400">
-          <span>wow very cool</span>
+          <span>thing</span>
           <div class="flex gap-2">by <div class="first-letter:font-extrabold first-letter:text-pink-600 font-light text-slate-300">Veikkosuhonen</div></div>
         </div>
       </div>

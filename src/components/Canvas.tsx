@@ -34,7 +34,8 @@ export default function Canvas() {
   })
 
   return (
-    <canvas ref={canvas} width={1080} height={1080} class="bg-transparent w-full h-[94vh]" 
+    <canvas ref={canvas} width={1080} height={1080} 
+      class="bg-transparent fixed top-0 w-full h-screen -z-50" 
     />
   )
 }

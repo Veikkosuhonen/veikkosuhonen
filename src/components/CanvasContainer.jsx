@@ -7,14 +7,13 @@ export default function CanvasContainer() {
   onMount(() => toast("Hi there!"))
 
   return (
-    <div class="bg-blue relative h-full flex flex-col">
-      <div class="object-left-bottom absolute w-full overflow-hidden">
+    <div class="bg-blue relative flex flex-col">
+      <div class="w-full overflow-x-hidden">
         <AudioPlayer />
         <Toasts />
       </div>
-      <div class="flex-grow">
-        <Canvas />
-      </div>
+      <div class="h-screen"/>
+      <Canvas />
     </div>
   )
 }
