@@ -4,6 +4,8 @@ import { Setting, getValue, setValue, settings } from "../graphics/settingsStore
 import { toast } from "./Toasts"
 import { Button } from "./Button"
 import { Surface } from "./Surface"
+import DeviceSelector from "./DeviceSelector"
+import Player from "./Player"
 
 let audioContext: AudioContext | null
 const analysers: Array<AnalyserNode | null> = [null, null]
@@ -18,71 +20,10 @@ export const getFrequencyData = () => {
   return dataArray1
 }
 
-const DeviceSelector: Component<{
-   selectDevice: (device: MediaDeviceInfo) => void, deviceId?: string
-}> = (props) => {
-
-  const [open, setOpen] = createSignal(false)
-
-  const [devices, setDevices] = createSignal<MediaDeviceInfo[]>([])
-
-  const onSelect = (device: MediaDeviceInfo) => {
-    props.selectDevice(device)
-    console.log(device)
-    setOpen(false)
-  }
-
-  const currentDevice = () => {
-    const matchingDevices = devices().filter(d => d.deviceId === props.deviceId)
-    if (matchingDevices.length) {
-      return matchingDevices[0]
-    } else {
-      return null
-    }
-  }
-
-  const loadDevices = async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices()
-    const audioDevices = devices.filter((d) => d.kind === "audioinput")
-    setDevices(audioDevices)
-  }
-
-  const onOpen = async () => {
-    const willOpen = !open()
-    setOpen(willOpen)
-    if (willOpen) {
-      loadDevices()
-    }
-  }
-
-  onMount(() => {
-    if (props.deviceId) {
-      loadDevices()
-    }
-  })
-
-  return (
-    <div class="relative">
-      <Button onClick={onOpen} isDown={!!props.deviceId}>{currentDevice()?.label ?? "Select input device"}</Button>
-      <Show when={open()}>
-        <div class="absolute">
-          <Surface>
-            <For each={devices()}
-              fallback={<span>No devices!</span>}
-            >{device => (
-                <div class="mb-1">
-                  <Button onClick={() => onSelect(device)}>{device.label}</Button>
-                </div>
-              )}</For>
-          </Surface>
-        </div>
-      </Show>
-    </div>
-  )
-}
-
 export default function AudioPlayer() {
   const [audio, setAudio] = createSignal<HTMLAudioElement|null>(null)
+  const [duration, setDuration] = createSignal<number>(0)
+
   let splitterNode: ChannelSplitterNode|null = null
   const [microphoneNode, setMicrophoneNode] = createSignal<MediaStreamAudioSourceNode|null>(null)
   let trackNode: MediaElementAudioSourceNode|null = null
@@ -133,6 +74,7 @@ export default function AudioPlayer() {
     const audio = new Audio(url)
     setName(file.name)
     setAudio(audio)
+
     trackNode = audioContext?.createMediaElementSource(audio) ?? null
     if (trackNode && splitterNode && audioContext) {
       trackNode.connect(splitterNode)
@@ -140,6 +82,11 @@ export default function AudioPlayer() {
     }
 
     audio.onended = () => setIsPlaying(false)
+  
+    // wotte fok
+    setTimeout(() => {
+      setDuration(audio.duration)
+    }, 50)
   }
 
   const toggleMicrophone = async () => {
@@ -230,12 +177,11 @@ export default function AudioPlayer() {
 
   return (
     <div class="flex flex-wrap items-stretch text-slate-300 text-sm w-full pt-4">
+      <Player audio={audio()} name={name()} duration={duration()} isMicrophone={microphoneOn()} isPlaying={isPlaying()} togglePlay={togglePlay}/>
+
       <div class="overflow-x-auto pl-4 mb-2">
         <Surface>
           <div class="flex items-center">
-            <Button disabled={!audio()} onClick={togglePlay}>
-              {isPlaying() ? "Pause" : "Play"}
-            </Button>
             <For each={settings}>{setting => 
               <Slider setting={setting} disabled={!audio() && !microphoneNode()} onChange={onSliderChange} />
             }</For>
