@@ -1,8 +1,8 @@
 import { createSignal } from "solid-js"
-import { getFrequencyData } from "~/components/Audio"
+import { getFrequencyData } from "~/components/visualiser/Audio"
 import { toast } from "~/components/Toasts"
-import { basicFragment, basicVertex, hdrFragment } from "../shaders"
-import { createFrameBuffer, createProgram, TextureFormat } from "./glUtils"
+import { basicFragment, basicVertex, hdrFragment } from "./shaders"
+import { createFrameBuffer, createProgram, createQuad, TextureFormats } from "./glUtils"
 import { Setting, settings } from "./settingsStore"
 
 const setProgramUniforms = (gl: WebGL2RenderingContext, program: WebGLProgram, settings: Setting[], stage: "render" | "post") => {
@@ -22,24 +22,12 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   gl.getExtension("EXT_color_buffer_float")
 
 
-  const vertices = [-1, -1,   1, -1,   -1, 1,   -1, 1,   1, -1,   1, 1]
-  
-  const vertexBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-
-
   const program = createProgram(gl, basicVertex, basicFragment)
   const hdrProgram = createProgram(gl, basicVertex, hdrFragment)
 
   gl.useProgram(program)
 
-
-
-  const positionAttribute = gl.getAttribLocation(program, "position")
-  gl.enableVertexAttribArray(positionAttribute)
-  gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0)
-
+  createQuad(gl, program)
 
   /**
    * Ping pong data buffers setup
@@ -47,11 +35,11 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   const {
     texture: dataTexture1,
     frameBuffer: dataFbo1
-  } = createFrameBuffer(gl, 1024, 256, TextureFormat.Byte)
+  } = createFrameBuffer(gl, 1024, 256, TextureFormats.Byte)
   const {
     texture: dataTexture2,
     frameBuffer: dataFbo2
-  } = createFrameBuffer(gl, 1024, 256, TextureFormat.Byte)
+  } = createFrameBuffer(gl, 1024, 256, TextureFormats.Byte)
 
   let firstDataFbo = true
   const currentDataTexture = () => {
@@ -74,7 +62,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   const {
     texture: hdrTexture,
     frameBuffer: hdrFbo
-  } = createFrameBuffer(gl, 1080, 1080, TextureFormat.Float)
+  } = createFrameBuffer(gl, 1080, 1080, TextureFormats.HalfFloat)
 
   const updateData = () => {
     const { texture: dataTexture, source, target } = currentDataTexture()

@@ -1,7 +1,7 @@
 import { onMount } from "solid-js"
 import AudioPlayer from "./Audio"
 import Canvas from "./Canvas"
-import Toasts, { toast } from "./Toasts"
+import Toasts, { toast } from "../Toasts"
 
 export default function CanvasContainer() {
   onMount(() => toast("Hi there!"))

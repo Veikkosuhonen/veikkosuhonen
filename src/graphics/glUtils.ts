@@ -1,7 +1,22 @@
-import { toast } from "~/components/Toasts"
+import { toast, toastError } from "~/components/Toasts"
 
-export const TextureFormat = {
-  Float: (gl: WebGL2RenderingContext) => ({
+type TextureFormat = (gl: WebGL2RenderingContext) => {
+  internalFormat: number
+  srcFormat: number
+  srcType: number
+}
+
+export const TextureFormats: {
+  SingleChannel: TextureFormat
+  HalfFloat: TextureFormat
+  Byte: TextureFormat
+} = {
+  SingleChannel: (gl: WebGL2RenderingContext) => ({
+    internalFormat: gl.R16F,
+    srcFormat: gl.RED,
+    srcType: gl.HALF_FLOAT,
+  }),
+  HalfFloat: (gl: WebGL2RenderingContext) => ({
     internalFormat: gl.RGBA16F,
     srcFormat: gl.RGBA,
     srcType: gl.HALF_FLOAT,
@@ -13,7 +28,7 @@ export const TextureFormat = {
   })
 } as const;
 
-export const createFrameBuffer = (gl: WebGL2RenderingContext, w: number, h: number, format = TextureFormat.Byte) => {
+export const createFrameBuffer = (gl: WebGL2RenderingContext, w: number, h: number, format = TextureFormats.Byte) => {
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
   let level = 0
@@ -36,8 +51,8 @@ export const createFrameBuffer = (gl: WebGL2RenderingContext, w: number, h: numb
     srcType,
     null
   )
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   // fbo setup
@@ -65,20 +80,39 @@ export const createProgram = (gl: WebGL2RenderingContext, vertexSource: string, 
   gl.shaderSource(vertexShader, vertexSource)
   gl.compileShader(vertexShader)
   let log = gl.getShaderInfoLog(vertexShader)
-  if (log) toast(log)
+  if (log) toastError(log)
 
   const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
   if (!fragmentShader) throw new Error("Failed to create fshader")
   gl.shaderSource(fragmentShader, fragmentSource)
   gl.compileShader(fragmentShader)
   log = gl.getShaderInfoLog(fragmentShader)
-  if (log) toast(log)
+  if (log) toastError(log)
 
   const program = gl.createProgram()
   if (!program) throw new Error("Failed to create program")
   gl.attachShader(program, vertexShader)
   gl.attachShader(program, fragmentShader)
   gl.linkProgram(program)
+  log = gl.getProgramInfoLog(program)
+  if (log) toastError(log)
 
   return program
 }
+
+
+export const createQuad = (gl: WebGL2RenderingContext, program: WebGLProgram) => {
+  const vertices = [-1, -1,   1, -1,   -1, 1,   -1, 1,   1, -1,   1, 1]
+  const quad = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad)
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(vertices),
+    gl.STATIC_DRAW
+  )
+
+  const positionAttribute = gl.getAttribLocation(program, "position")
+  gl.enableVertexAttribArray(positionAttribute)
+  gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0)
+}
+

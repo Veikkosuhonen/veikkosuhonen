@@ -1,6 +1,6 @@
 import { onCleanup, onMount } from "solid-js"
 import startRendering, { setCanvasSize } from "~/graphics/visualiser"
-import { toast } from "./Toasts"
+import { toast } from "../Toasts"
 
 export default function Canvas() {
   let canvas: HTMLCanvasElement|undefined

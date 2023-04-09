@@ -1,4 +1,4 @@
-import CanvasContainer from "~/components/CanvasContainer"
+import CanvasContainer from "~/components/visualiser/CanvasContainer"
 
 export default function Visualiser() {
   return (

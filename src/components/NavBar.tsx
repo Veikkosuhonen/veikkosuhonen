@@ -16,6 +16,9 @@ const NavBar = () => {
         <li class={`border-b-2 ${active("/visualiser")} mx-1.5 sm:mx-6`}>
           <A href="/visualiser">Music visualizer</A>
         </li>
+        <li class={`border-b-2 ${active("/terrain")} mx-1.5 sm:mx-6`}>
+          <A href="/terrain">Terrain generator</A>
+        </li>
       </ul>
     </nav>
   )
