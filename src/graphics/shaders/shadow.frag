@@ -6,14 +6,12 @@ uniform vec2 u_resolution;
 uniform sampler2D u_shadows;
 uniform sampler2D u_data;
 uniform vec3 u_sunDirection;
+uniform float u_zoom;
 
 out vec4 outColor;
 
 void main() {
   vec2 st = gl_FragCoord.st / u_resolution;
-
-  vec4 data = texture(u_data, st);
-  float heightHere = data.r;
 
   vec3 sunRay = normalize(u_sunDirection) / u_resolution.x; // assuming a square frame buffer
 

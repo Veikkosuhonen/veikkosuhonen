@@ -1,5 +1,5 @@
 import { onMount } from "solid-js"
-import Canvas from "./Canvas"
+import Canvas, { frameTime } from "./Canvas"
 import Toasts, { toast } from "../Toasts"
 
 export default function CanvasContainer() {
@@ -8,9 +8,18 @@ export default function CanvasContainer() {
   return (
     <div class="bg-blue relative flex flex-col">
       <div class="w-full overflow-x-hidden">
-        <Toasts />
+        <div class="flex w-full">
+          <Toasts />
+          <section class="ml-auto bg-black/30 rounded-md m-1 p-2 text-slate-200">
+            <h3 class="text-lg">Guide</h3>
+            <div class="text-sm">WASD to move around</div>
+            <div class="text-sm">Scroll to zoom</div>
+            <div class="text-sm">Reload to get a new map</div>
+            <div class="text-sm">Warning: may eat your battery life!</div>
+            <div class="text-sm">Fps: {(1000.0 / frameTime()).toFixed()}</div>
+          </section>
+        </div>
       </div>
-      <div class="h-screen"/>
       <Canvas />
     </div>
   )

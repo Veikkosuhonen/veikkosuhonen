@@ -36,7 +36,7 @@ const Toast: Component<{ toast: ToastData }> = (props) => {
   onMount(() => {
     setTimeout(() => {
       setHidden(true)
-    }, 4_500 + props.toast.extraDelay)
+    }, 9_500 + props.toast.extraDelay)
   })
   return (
     <div class={cn(
@@ -52,7 +52,7 @@ const Toast: Component<{ toast: ToastData }> = (props) => {
 const Toasts: Component = () => {
 
   return (
-    <div class="absolute p-2 mt-4 text-slate-500 text-xs font-mono select-none">
+    <div class="absolute p-2 mt-4 m-1 text-slate-400 text-xs font-mono select-none bg-black/30 rounded-md">
       <For each={toasts}>{toast => 
         <Toast toast={toast} />
       }</For>

@@ -87,6 +87,25 @@ float canyonHeightMap(in vec2 st) {
   return height * height * 0.5;
 }
 
+float computeHeight(in vec2 st) {
+  float height = baseHeightMap(st);
+
+  height -= canyonHeightMap(10.0 - st * 0.3);
+  height -= canyonHeightMap(10.0 + st) * 0.5;
+
+  return height;
+}
+
+float computeMultisampledHeight(in vec2 st) {
+  vec2 nudge = vec2(1.0, 0.0) / u_resolution;
+  float avg = 0.0;
+  avg += computeHeight(st + nudge.yy); // 0,0
+  avg += computeHeight(st + nudge.xy); // 1,0
+  avg += computeHeight(st + nudge.xx); // 1,1
+  avg += computeHeight(st + nudge.yx); // 0,1
+  return avg / 4.0;
+}
+
 void main() {
   vec2 st0 = gl_FragCoord.st / u_resolution;
 
@@ -97,10 +116,7 @@ void main() {
   st += u_seed / 10000.0;
   st *= 3.0;
   
-  float height = baseHeightMap(st);
-
-  height -= canyonHeightMap(10.0 - st * 0.3);
-  height -= canyonHeightMap(10.0 + st) * 0.5;
+  float height = computeHeight(st);
 
   // slight circular mask
   height -= smoothstep(0.4, 0.5, distanceFromCenter) * 0.3;
