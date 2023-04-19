@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js"
 import { getFrequencyData } from "~/components/visualiser/Audio"
 import { toast } from "~/components/Toasts"
-import { basicFragment, basicVertex, hdrFragment } from "./shaders"
+import shaders from "./shaders"
 import { createFrameBuffer, createProgram, createQuad, TextureFormats } from "./glUtils"
 import { Setting, settings } from "./settingsStore"
 
@@ -22,8 +22,8 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   gl.getExtension("EXT_color_buffer_float")
 
 
-  const program = createProgram(gl, basicVertex, basicFragment)
-  const hdrProgram = createProgram(gl, basicVertex, hdrFragment)
+  const program = createProgram(gl, shaders.basicVertex, shaders.basicFragment)
+  const hdrProgram = createProgram(gl, shaders.basicVertex, shaders.hdrFragment)
 
   gl.useProgram(program)
 

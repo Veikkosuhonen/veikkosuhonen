@@ -160,6 +160,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     shadowProgram.destroy()
   
     dataBuffers.destroy()
+    shadowBuffers.destroy()
   }
 }
 
