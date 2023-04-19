@@ -4,6 +4,7 @@ import { TextureFormats, createFrameBuffer, createProgram, createQuad } from "~/
 import { baseGeneration, basicGles3Vertex, erosion, map, shadow } from "~/graphics/shaders"
 import { createMousePosition } from "@solid-primitives/mouse"
 import { useKeyDownList } from "@solid-primitives/keyboard";
+import Shader from "~/graphics/Shader"
 
 const activeGlContexts = new Set<WebGL2RenderingContext>()
 const [canvasSize, setCanvasSize] = createSignal<number[]>([1920, 1280])
@@ -54,14 +55,14 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   activeGlContexts.add(gl)
   gl.getExtension("EXT_color_buffer_float")
 
-  const finalProgram = createProgram(gl, basicGles3Vertex, map)
-  const shadowProgram = createProgram(gl, basicGles3Vertex, shadow)
-  const generationProgram = createProgram(gl, basicGles3Vertex, baseGeneration)
-  const erosionProgram = createProgram(gl, basicGles3Vertex, erosion)
+  const finalProgram = new Shader(gl, basicGles3Vertex, map)
+  const shadowProgram = new Shader(gl, basicGles3Vertex, shadow)
+  const generationProgram = new Shader(gl, basicGles3Vertex, baseGeneration)
+  const erosionProgram = new Shader(gl, basicGles3Vertex, erosion)
 
-  gl.useProgram(finalProgram)
+  finalProgram.use()
 
-  createQuad(gl, finalProgram)
+  createQuad(gl, finalProgram.program)
 
   /**
    * Ping pong data buffers setup
