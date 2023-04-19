@@ -1,6 +1,6 @@
 import { toast, toastError } from "~/components/Toasts"
 
-type TextureFormat = (gl: WebGL2RenderingContext) => {
+export type TextureFormat = (gl: WebGL2RenderingContext) => {
   internalFormat: number
   srcFormat: number
   srcType: number

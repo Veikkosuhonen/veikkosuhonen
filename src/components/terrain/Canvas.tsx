@@ -1,10 +1,10 @@
 import { createSignal, onCleanup, onMount } from "solid-js"
 import { toast } from "../Toasts"
-import { TextureFormats, createFrameBuffer, createProgram, createQuad } from "~/graphics/glUtils"
-import { baseGeneration, basicGles3Vertex, erosion, map, shadow } from "~/graphics/shaders"
+import { TextureFormats, createFrameBuffer, createQuad } from "~/graphics/glUtils"
 import { createMousePosition } from "@solid-primitives/mouse"
-import { useKeyDownList } from "@solid-primitives/keyboard";
+import { useKeyDownList } from "@solid-primitives/keyboard"
 import Shader from "~/graphics/Shader"
+import PingPongBuffer from "~/graphics/PingPongBuffer"
 
 const activeGlContexts = new Set<WebGL2RenderingContext>()
 const [canvasSize, setCanvasSize] = createSignal<number[]>([1920, 1280])
@@ -55,80 +55,28 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   activeGlContexts.add(gl)
   gl.getExtension("EXT_color_buffer_float")
 
-  const finalProgram = new Shader(gl, basicGles3Vertex, map)
-  const shadowProgram = new Shader(gl, basicGles3Vertex, shadow)
-  const generationProgram = new Shader(gl, basicGles3Vertex, baseGeneration)
-  const erosionProgram = new Shader(gl, basicGles3Vertex, erosion)
+  const finalProgram = Shader.fromFragment(gl, "map")
+  const shadowProgram = Shader.fromFragment(gl, "shadow")
+  const generationProgram = Shader.fromFragment(gl, "baseGeneration")
+  const erosionProgram = Shader.fromFragment(gl, "erosion")
 
   finalProgram.use()
 
   createQuad(gl, finalProgram.program)
 
-  /**
-   * Ping pong data buffers setup
-   */
-  const {
-    texture: dataTexture1,
-    frameBuffer: dataFbo1
-  } = createFrameBuffer(gl, BUFFER_W, BUFFER_W, TextureFormats.HalfFloat)
-  const {
-    texture: dataTexture2,
-    frameBuffer: dataFbo2
-  } = createFrameBuffer(gl, BUFFER_W, BUFFER_W, TextureFormats.HalfFloat)
-
-  let firstDataFbo = true
-  const currentDataTexture = () => {
-    firstDataFbo = !firstDataFbo
-    return firstDataFbo ? {
-      texture: dataTexture1,
-      source: dataFbo1,
-      target: dataFbo2,
-    } : {
-      texture: dataTexture2,
-      source: dataFbo2,
-      target: dataFbo1,
-    }
-  }
-
-  /**
-   * Ping pong shadow buffers setup
-   */
-  const {
-    texture: shadowTexture1,
-    frameBuffer: shadowFbo1
-  } = createFrameBuffer(gl, SHADOW_BUFFER_W, SHADOW_BUFFER_W, TextureFormats.SingleChannel)
-  const {
-    texture: shadowTexture2,
-    frameBuffer: shadowFbo2
-  } = createFrameBuffer(gl, SHADOW_BUFFER_W, SHADOW_BUFFER_W, TextureFormats.SingleChannel)
-
-  let firstShadowFbo = true
-  const currentShadowTexture = () => {
-    firstShadowFbo = !firstShadowFbo
-    return firstShadowFbo ? {
-      texture: shadowTexture1,
-      source: shadowFbo1,
-      target: shadowFbo2,
-    } : {
-      texture: shadowTexture2,
-      source: shadowFbo2,
-      target: shadowFbo1,
-    }
-  }
+  const dataBuffers = new PingPongBuffer(gl, BUFFER_W, BUFFER_W, "HalfFloat")
+  const shadowBuffers = new PingPongBuffer(gl, SHADOW_BUFFER_W, SHADOW_BUFFER_W, "SingleChannel")
 
   /**
    * Render generationProgram once
    */
-  gl.useProgram(generationProgram)
+  generationProgram.use()
 
-  let ul = gl.getUniformLocation(generationProgram, "u_resolution")
-  gl.uniform2f(ul, BUFFER_W, BUFFER_W)
-  ul = gl.getUniformLocation(generationProgram, "u_seed")
-  gl.uniform1f(ul, 100000 * (Math.random() - 0.5))
-  ul = gl.getUniformLocation(generationProgram, "u_zoom")
-  gl.uniform1f(ul, 1)
+  generationProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+  generationProgram.setUniform1f("u_seed", 100000 * (Math.random() - 0.5))
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, dataFbo2)
+  const { targetFbo } = dataBuffers.getCurrent()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
   gl.drawArrays(gl.TRIANGLES, 0, 6)
 
   const actualStart = performance.now()
@@ -136,21 +84,15 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   let frameCount = 0
 
   const renderShadows = () => {
-    const { texture: shadowTexture, target: shadowTarget } = currentShadowTexture()
-    gl.useProgram(shadowProgram)
-    ul = gl.getUniformLocation(shadowProgram, "u_resolution")
-    gl.uniform2f(ul, SHADOW_BUFFER_W, SHADOW_BUFFER_W)
-    ul = gl.getUniformLocation(shadowProgram, "u_zoom")
-    gl.uniform1f(ul, 1)
-    ul = gl.getUniformLocation(shadowProgram, "u_sunDirection")
-    gl.uniform3f(ul, sunDirection()[0], sunDirection()[1], sunDirection()[2])
-    ul = gl.getUniformLocation(shadowProgram, "u_data")
-    gl.uniform1i(ul, 0)
+    const { texture: shadowTexture, targetFbo: shadowTarget } = shadowBuffers.getCurrent()
+    shadowProgram.use()
+    shadowProgram.setUniform2f("u_resolution", SHADOW_BUFFER_W, SHADOW_BUFFER_W)
+    shadowProgram.setUniform3f("u_sunDirection", sunDirection()[0], sunDirection()[1], sunDirection()[2])
+    shadowProgram.setUniform1i("u_data", 0)
 
     gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_2D, shadowTexture)
-    ul = gl.getUniformLocation(shadowProgram, "u_shadows")
-    gl.uniform1i(ul, 1)
+    shadowProgram.setUniform1i("u_shadows", 1)
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowTarget)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
@@ -165,19 +107,15 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     /**
      * Render erosionProgram to frame buffer
      */
-    const { texture, target } = currentDataTexture()
-    gl.useProgram(erosionProgram)
-    let ul = gl.getUniformLocation(erosionProgram, "u_resolution")
-    gl.uniform2f(ul, BUFFER_W, BUFFER_W)
-    ul = gl.getUniformLocation(erosionProgram, "u_zoom")
-    gl.uniform1f(ul, 1)
-
+    const { texture, targetFbo } = dataBuffers.getCurrent()
+    erosionProgram.use()
+    erosionProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+    
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, texture)
-    ul = gl.getUniformLocation(erosionProgram, "u_data")
-    gl.uniform1i(ul, 0)
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, target)
+    erosionProgram.setUniform1i("u_data", 0)
+  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
 
     /**
@@ -190,21 +128,14 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     /**
      * Render to canvas
      */
-    gl.useProgram(finalProgram)
-    ul = gl.getUniformLocation(finalProgram, "u_resolution")
-    gl.uniform2f(ul, BUFFER_W, BUFFER_W)
-    ul = gl.getUniformLocation(finalProgram, "u_canvasSize")
-    gl.uniform2f(ul, canvasSize()[0], canvasSize()[1])
-    ul = gl.getUniformLocation(finalProgram, "u_data")
-    gl.uniform1i(ul, 0)
-    ul = gl.getUniformLocation(finalProgram, "u_shadows")
-    gl.uniform1i(ul, 1)
-    ul = gl.getUniformLocation(finalProgram, "u_sunDirection")
-    gl.uniform3f(ul, sunDirection()[0], sunDirection()[1], sunDirection()[2])
-    ul = gl.getUniformLocation(finalProgram, "u_zoom")
-    gl.uniform1f(ul, zoom())
-    ul = gl.getUniformLocation(finalProgram, "u_cameraPos")
-    gl.uniform2f(ul, cameraPos()[0], cameraPos()[1])
+    finalProgram.use()
+    finalProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+    finalProgram.setUniform2f("u_canvasSize", canvasSize()[0], canvasSize()[1])
+    finalProgram.setUniform1i("u_data", 0)
+    finalProgram.setUniform1i("u_shadows", 1)
+    finalProgram.setUniform3f("u_sunDirection", sunDirection()[0], sunDirection()[1], sunDirection()[2])
+    finalProgram.setUniform1f("u_zoom", zoom())
+    finalProgram.setUniform2f("u_cameraPos", cameraPos()[0], cameraPos()[1])
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
@@ -223,13 +154,12 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     toast("Cleaning up WebGL resources")
     activeGlContexts.delete(gl)
 
-    gl.deleteProgram(finalProgram)
-    gl.deleteProgram(generationProgram)
-    gl.deleteProgram(erosionProgram)
-    gl.deleteTexture(dataTexture1)
-    gl.deleteTexture(dataTexture2)
-    gl.deleteFramebuffer(dataFbo1)
-    gl.deleteFramebuffer(dataFbo2)
+    finalProgram.destroy()
+    generationProgram.destroy()
+    erosionProgram.destroy()
+    shadowProgram.destroy()
+  
+    dataBuffers.destroy()
   }
 }
 
@@ -238,8 +168,6 @@ const startRendering = (canvas: HTMLCanvasElement) => {
 export default function Canvas() {
   let canvas: HTMLCanvasElement|undefined
   let cleanup: () => void|undefined
-
-  const pos = createMousePosition();
 
   const resize = () => {
     const size = [
@@ -253,7 +181,6 @@ export default function Canvas() {
   const handleZoom = (ev: WheelEvent) => {
     const { deltaY } = ev
     setZoom(zoom() * (deltaY / 1000.0 + 1.0))
-    console.log(zoom())
   }
 
   onMount(() => {

@@ -1,20 +1,29 @@
 import { createProgram } from "./glUtils";
+import shaders from "./shaders";
 
 class Shader {
   gl: WebGL2RenderingContext;
   program: WebGLProgram;
   uniforms: { [name: string]: WebGLUniformLocation };
+  name: string;
 
-  constructor(gl: WebGL2RenderingContext, vertexShaderSource: string, fragmentShaderSource: string) {
+  static fromFragment(gl: WebGL2RenderingContext, name: keyof typeof shaders) {
+    const vertexShaderSource = shaders.basicGles3Vertex
+    const fragmentShaderSource = shaders[name]
+    return new Shader(gl, vertexShaderSource, fragmentShaderSource, name)
+  }
+
+  constructor(gl: WebGL2RenderingContext, vertexShaderSource: string, fragmentShaderSource: string, name: string) {
     this.gl = gl
     this.program = createProgram(gl, vertexShaderSource, fragmentShaderSource)
     this.uniforms = {}
+    this.name = name
   }
 
   private getUniformLocation(name: string) {
     if (!this.uniforms[name]) {
       const location = this.gl.getUniformLocation(this.program, name)
-      if (!location) throw new Error(`Uniform ${name} not found`)
+      if (!location) throw new Error(`[${this.name}] Uniform ${name} not found`)
       this.uniforms[name] = location
     }
     return this.uniforms[name]

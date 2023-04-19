@@ -7,7 +7,7 @@ import map from "./map.frag?raw"
 import erosion from "./erosion.frag?raw"
 import shadow from "./shadow.frag?raw"
 
-export {
+const shaders = {
   basicVertex,
   basicGles3Vertex,
   basicFragment,
@@ -17,3 +17,5 @@ export {
   erosion,
   shadow,
 }
+
+export default shaders
