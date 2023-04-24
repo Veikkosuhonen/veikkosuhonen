@@ -14,7 +14,8 @@ export default function CanvasContainer() {
             <h3 class="text-lg">Guide</h3>
             <div class="text-sm">WASD to move around</div>
             <div class="text-sm">Scroll to zoom</div>
-            <div class="text-sm">Reload to get a new map</div>
+            <div class="text-sm">Hold E to water your island</div>
+            <div class="text-sm">Reload to get a new island</div>
             <div class="text-sm">Warning: may eat your battery life!</div>
             <div class="text-sm">Fps: {(1000.0 / frameTime()).toFixed()}</div>
           </section>

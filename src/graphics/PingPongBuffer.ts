@@ -28,19 +28,20 @@ class PingPongBuffer {
     this.writeFramebuffer = g2
   }
 
-  getCurrent() {
+  private swap() {
     const tempTexture = this.readTexture
     const tempFramebuffer = this.readFramebuffer
     this.readTexture = this.writeTexture
     this.readFramebuffer = this.writeFramebuffer
     this.writeTexture = tempTexture
     this.writeFramebuffer = tempFramebuffer
+  }
 
-    return {
-      texture: this.readTexture,
-      sourceFbo: this.readFramebuffer,
-      targetFbo: this.writeFramebuffer
-    }
+  draw() {
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.writeFramebuffer)
+    // assuming a quad
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6)
+    this.swap()
   }
 
   destroy() {

@@ -70,7 +70,7 @@ float baseHeightMap(in vec2 st) {
   st.x += fbm(st) * 0.2;
   st.y += fbm(st) * 0.2;
   float granularity = fbm(st * 2.0 + 40.0) * 0.15 + 0.45;
-  float height = fbm(st, granularity);
+  float height = fbm(st, granularity) * 1.1;
   return height;
 }
 
@@ -98,7 +98,7 @@ float computeHeight(in vec2 st) {
 
 float computeMultisampledHeight(in vec2 st) {
   vec2 nudge = vec2(1.0, 0.0) / u_resolution;
-  float avg = 0.0;
+  float avg = 0.01;
   avg += computeHeight(st + nudge.yy); // 0,0
   avg += computeHeight(st + nudge.xy); // 1,0
   avg += computeHeight(st + nudge.xx); // 1,1

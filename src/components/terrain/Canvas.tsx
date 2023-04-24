@@ -7,20 +7,24 @@ import Shader from "~/graphics/Shader"
 import PingPongBuffer from "~/graphics/PingPongBuffer"
 
 const activeGlContexts = new Set<WebGL2RenderingContext>()
+const [canvasElement, setCanvasElement] = createSignal<HTMLCanvasElement>()
 const [canvasSize, setCanvasSize] = createSignal<number[]>([1920, 1280])
 const [sunDirection, setSunDirection] = createSignal<number[]>([1, 1, 0.5])
 const [zoom, setZoom] = createSignal<number>(1.0)
+const [rain, setRain] = createSignal<boolean>(false)
 const [cameraPos, setCameraPos] = createSignal<number[]>([0, 0])
 export const [frameTime, setFrameTime] = createSignal(0)
 const BUFFER_W = 1280
 const SHADOW_BUFFER_W = 1080
 
 const [keys] = useKeyDownList();
+const mouse = createMousePosition(canvasElement());
 
 const processInput = (deltaTime: number) => {
   // read keyboard input
   let deltaX = 0.0
   let deltaY = 0.0
+  let rain = false
   keys().forEach(key => {
     switch (key) {
       case "W"||"up":
@@ -34,18 +38,22 @@ const processInput = (deltaTime: number) => {
         break;
       case "S"||"down":
         deltaY -= 1.0;
+        break;
+      case "E":
+        rain = true
+        break;
       default:
         break;
     }
   });
-  
-
+  setRain(rain)
   setCameraPos([cameraPos()[0] + deltaTime * deltaX * zoom() * 0.1, cameraPos()[1] + deltaTime * deltaY * zoom() * 0.1])
 }
 
+
 const updateSunPosition = (currentTime: number) => {
   // @TODO fix lol
-  setSunDirection([Math.sin(currentTime * 0.5), Math.cos(currentTime * 0.5), Math.sin(currentTime * 0.7) + 1.0])
+  setSunDirection([Math.sin(currentTime * 0.5), Math.cos(currentTime * 0.5), Math.sin(currentTime * 0.7) * 0.5 + 0.6])
 }
 
 
@@ -58,6 +66,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   const finalProgram = Shader.fromFragment(gl, "map")
   const shadowProgram = Shader.fromFragment(gl, "shadow")
   const generationProgram = Shader.fromFragment(gl, "baseGeneration")
+  const fluxProgram = Shader.fromFragment(gl, "fluidFlux")
   const erosionProgram = Shader.fromFragment(gl, "erosion")
 
   finalProgram.use()
@@ -65,6 +74,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   createQuad(gl, finalProgram.program)
 
   const dataBuffers = new PingPongBuffer(gl, BUFFER_W, BUFFER_W, "HalfFloat")
+  const fluidFluxBuffers = new PingPongBuffer(gl, BUFFER_W, BUFFER_W, "HalfFloat")
   const shadowBuffers = new PingPongBuffer(gl, SHADOW_BUFFER_W, SHADOW_BUFFER_W, "SingleChannel")
 
   /**
@@ -74,29 +84,52 @@ const startRendering = (canvas: HTMLCanvasElement) => {
 
   generationProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
   generationProgram.setUniform1f("u_seed", 100000 * (Math.random() - 0.5))
-
-  const { targetFbo } = dataBuffers.getCurrent()
-  gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
-  gl.drawArrays(gl.TRIANGLES, 0, 6)
+  dataBuffers.draw()
 
   const actualStart = performance.now()
   let start = actualStart
   let frameCount = 0
 
+
+  const renderErosion = () => {
+    rain() ? console.log("Raining") : null
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, dataBuffers.readTexture)
+  
+    gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_2D, fluidFluxBuffers.readTexture)
+
+    // Flow is simulated with the shallow water pipe-model. Flux buffer is updated
+    fluxProgram.use()
+    fluxProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+    fluxProgram.setUniform1i("u_terrain", 0)
+    fluxProgram.setUniform1i("u_fluidFlow", 1)
+    fluidFluxBuffers.draw()
+
+    // Water level is updated based on fluid flow. Rainfall is added and water level is decreased due to evaporation
+    // Erosion-deposition process is computed
+    erosionProgram.use()
+    erosionProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+    erosionProgram.setUniform1i("u_terrain", 0)
+    erosionProgram.setUniform1i("u_fluidFlow", 1)
+    erosionProgram.setUniform2f("u_mouse", rain() ? 1.0 : 0.0, 0.0)
+    dataBuffers.draw()
+  }
+
+
   const renderShadows = () => {
-    const { texture: shadowTexture, targetFbo: shadowTarget } = shadowBuffers.getCurrent()
     shadowProgram.use()
     shadowProgram.setUniform2f("u_resolution", SHADOW_BUFFER_W, SHADOW_BUFFER_W)
     shadowProgram.setUniform3f("u_sunDirection", sunDirection()[0], sunDirection()[1], sunDirection()[2])
     shadowProgram.setUniform1i("u_data", 0)
 
     gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, shadowTexture)
+    gl.bindTexture(gl.TEXTURE_2D, shadowBuffers.readTexture)
     shadowProgram.setUniform1i("u_shadows", 1)
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, shadowTarget)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    shadowBuffers.draw()
   }
+
 
   const render = () => {
     if (!activeGlContexts.has(gl)) return
@@ -104,24 +137,12 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     processInput(frameTime() / 1000.0)
     updateSunPosition(frameCount / 3000.0)
 
-    /**
-     * Render erosionProgram to frame buffer
-     */
-    const { texture, targetFbo } = dataBuffers.getCurrent()
-    erosionProgram.use()
-    erosionProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
-    
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    erosionProgram.setUniform1i("u_data", 0)
-  
-    gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
-    gl.drawArrays(gl.TRIANGLES, 0, 6)
+    renderErosion()
 
     /**
      * Render shadowProgram to frame buffer
      */
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 2; i++) {
       renderShadows()  
     }
 
@@ -131,8 +152,11 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     finalProgram.use()
     finalProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
     finalProgram.setUniform2f("u_canvasSize", canvasSize()[0], canvasSize()[1])
-    finalProgram.setUniform1i("u_data", 0)
+    finalProgram.setUniform1i("u_terrain", 0)
     finalProgram.setUniform1i("u_shadows", 1)
+    gl.activeTexture(gl.TEXTURE2)
+    gl.bindTexture(gl.TEXTURE_2D, fluidFluxBuffers.readTexture)
+    finalProgram.setUniform1i("u_fluidFlow", 2)
     finalProgram.setUniform3f("u_sunDirection", sunDirection()[0], sunDirection()[1], sunDirection()[2])
     finalProgram.setUniform1f("u_zoom", zoom())
     finalProgram.setUniform2f("u_cameraPos", cameraPos()[0], cameraPos()[1])
@@ -188,6 +212,7 @@ export default function Canvas() {
 
     try {
       if (canvas) {
+        setCanvasElement(canvas)
         cleanup = startRendering(canvas)
 
         addEventListener("resize", resize)

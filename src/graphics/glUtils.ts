@@ -8,6 +8,7 @@ export type TextureFormat = (gl: WebGL2RenderingContext) => {
 
 export const TextureFormats: {
   SingleChannel: TextureFormat
+  Float: TextureFormat
   HalfFloat: TextureFormat
   Byte: TextureFormat
 } = {
@@ -15,6 +16,11 @@ export const TextureFormats: {
     internalFormat: gl.R16F,
     srcFormat: gl.RED,
     srcType: gl.HALF_FLOAT,
+  }),
+  Float: (gl: WebGL2RenderingContext) => ({
+    internalFormat: gl.RGBA32F,
+    srcFormat: gl.RGBA,
+    srcType: gl.FLOAT,
   }),
   HalfFloat: (gl: WebGL2RenderingContext) => ({
     internalFormat: gl.RGBA16F,

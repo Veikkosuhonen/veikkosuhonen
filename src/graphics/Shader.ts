@@ -23,7 +23,7 @@ class Shader {
   private getUniformLocation(name: string) {
     if (!this.uniforms[name]) {
       const location = this.gl.getUniformLocation(this.program, name)
-      if (!location) throw new Error(`[${this.name}] Uniform ${name} not found`)
+      if (!location) return null //throw new Error(`[${this.name}] Uniform ${name} not found`)
       this.uniforms[name] = location
     }
     return this.uniforms[name]
