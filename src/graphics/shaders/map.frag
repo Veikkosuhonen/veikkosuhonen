@@ -14,6 +14,8 @@ uniform vec2 u_cameraPos;
 
 out vec4 outColor;
 
+const float IceLevel = 0.45;
+
 vec3 stdNormalMap(in vec2 uv) {
   vec2 s = 1.0 / u_resolution.xy;
   
@@ -71,12 +73,18 @@ void main() {
   shadowHeight = mix(shadowHeight, -1.0, distanceFalloffFromCenter);
 
   vec3 normal = stdNormalMap(st);
-  vec3 diffuse = vec3(0.2824, 0.3176, 0.2235);
+  vec3 diffuse = vec3(0.2824, 0.2941, 0.2588);
   float specular = 0.0;
 
-  diffuse = mix(diffuse, vec3(0.0078, 0.2353, 0.0392), smoothstep(0.8, 1.1, normal.z + totalWater));
+  float fertility = normal.z + totalWater + data.a - max(0.0, height) * 1.2;
+
+  diffuse = mix(diffuse, vec3(0.0078, 0.2353, 0.0392), smoothstep(0.8, 1.1, fertility));
   diffuse = mix(diffuse, vec3(0.5216, 0.4706, 0.3373), smoothstep(0.015, 0.0, abs(height) * normal.z));
   diffuse = mix(diffuse, vec3(0.3333, 0.3333, 0.3333), smoothstep(0.91, 0.70, (normal.z)));
+
+  // ice
+  diffuse = mix(diffuse, vec3(0.7843, 0.9098, 0.9333), smoothstep(0.0, 0.01, totalWater) * smoothstep(0.0, 0.05, height - IceLevel));
+  
 
   float ambientLight = 0.5;
   float sunLightAmount = 0.7;
@@ -88,8 +96,8 @@ void main() {
 
   diffuse *= light + ambientLight + skyLight;
 
-  // water
-  if (height < 0.0 || totalWater > 0.03) {
+  if ((height < 0.0 || totalWater > 0.05) && height < IceLevel) {
+    // water
     float waterAmount = max(-height, data.g / 10.0);
     vec3 waterColor = mix(vec3(0.1373, 0.3686, 0.5686), vec3(0.1176, 0.1843, 0.4588), min(waterAmount, 1.0));
 
@@ -113,6 +121,6 @@ void main() {
   //vec4 flux = texture(u_fluidFlow, st).rgba;
   //flux = step(flux, vec3(0.0));
   //float heightLine = smoothstep(0.9, 1.0, fract(height * 15.0)) * 0.7;
-  //outColor = vec4(heightLine, data.g * 10.0, data.a * 2.0, 1.0);
+  //outColor = vec4(heightLine,-data.b * 300.0, data.b * 300.0, 1.0);
  // outColor = vec4(vec3(data.r, (fl)), 1.0);
 }

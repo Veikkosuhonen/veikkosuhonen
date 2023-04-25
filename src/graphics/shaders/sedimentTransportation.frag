@@ -34,9 +34,14 @@ void main() {
     (flowHere.g + flowTop.a) - (flowHere.a + flowBottom.g)
   );
 
-  vec2 previousPosition = st - clamp(waterVelocity * DeltaT * 0.01, -offset * 0.1, offset * 0.1);
+  float flowDifference = (flowLeft.r + flowRight.g + flowBottom.b + flowTop.a) - (flowHere.r + flowHere.g + flowHere.b + flowHere.a);
 
-  float suspendedSediment = texture(u_terrain, previousPosition).b;
+  vec2 previousPosition = st - waterVelocity * DeltaT * flowDifference * 0.8;
 
-  outColor = vec4(terrainHere.r, terrainHere.g, suspendedSediment, terrainHere.a);
+  float heightThere = texture(u_terrain, previousPosition).r;
+
+
+  float newHeight = mix(terrainHere.r, heightThere, 0.1);
+
+  outColor = vec4(newHeight, terrainHere.g, terrainHere.b, terrainHere.a);
 }

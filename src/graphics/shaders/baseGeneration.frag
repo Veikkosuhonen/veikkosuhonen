@@ -96,6 +96,10 @@ float computeHeight(in vec2 st) {
   return height;
 }
 
+float computeHardness(in vec2 st) {
+  return clamp(baseHeightMap(st) * 0.5 + 0.5, 0.0, 1.0);
+}
+
 void main() {
   vec2 st0 = gl_FragCoord.st / u_resolution;
 
@@ -113,7 +117,9 @@ void main() {
   // rect mask
   height -= smoothstep(0.38, 0.48, squareMask) * 0.3;
 
-  vec4 data = vec4(height, 0.0, 0.0, 1.0);
+  float hardness = computeHardness(2.0 * st0 - u_seed / 1000.0) + 0.02;
+
+  vec4 data = vec4(height, 0.0, 0.0, hardness);
 
   outColor = data;
 }

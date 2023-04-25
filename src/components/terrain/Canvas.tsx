@@ -115,7 +115,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     erosionProgram.setUniform1i("u_fluidFlow", 1)
     erosionProgram.setUniform2f("u_mouse", rain() ? 1.0 : 0.0, 0.0)
     dataBuffers.draw()
-/* 
+
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, dataBuffers.readTexture)
 
@@ -124,7 +124,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     sedimentProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
     sedimentProgram.setUniform1i("u_terrain", 0)
     sedimentProgram.setUniform1i("u_fluidFlow", 1)
-    dataBuffers.draw() */
+    dataBuffers.draw()
   }
 
 
