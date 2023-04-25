@@ -7,6 +7,7 @@ import map from "./map.frag?raw"
 import erosion from "./erosion.frag?raw"
 import shadow from "./shadow.frag?raw"
 import fluidFlux from "./fluidFlow.frag?raw"
+import sedimentTransportation from "./sedimentTransportation.frag?raw"
 
 const shaders = {
   basicVertex,
@@ -18,6 +19,7 @@ const shaders = {
   erosion,
   shadow,
   fluidFlux,
+  sedimentTransportation,
 }
 
 export default shaders

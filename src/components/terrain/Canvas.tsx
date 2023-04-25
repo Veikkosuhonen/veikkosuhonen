@@ -47,7 +47,7 @@ const processInput = (deltaTime: number) => {
     }
   });
   setRain(rain)
-  setCameraPos([cameraPos()[0] + deltaTime * deltaX * zoom() * 0.1, cameraPos()[1] + deltaTime * deltaY * zoom() * 0.1])
+  setCameraPos([cameraPos()[0] + deltaTime * deltaX * zoom() * 0.3, cameraPos()[1] + deltaTime * deltaY * zoom() * 0.3])
 }
 
 
@@ -68,6 +68,7 @@ const startRendering = (canvas: HTMLCanvasElement) => {
   const generationProgram = Shader.fromFragment(gl, "baseGeneration")
   const fluxProgram = Shader.fromFragment(gl, "fluidFlux")
   const erosionProgram = Shader.fromFragment(gl, "erosion")
+  const sedimentProgram = Shader.fromFragment(gl, "sedimentTransportation")
 
   finalProgram.use()
 
@@ -114,6 +115,16 @@ const startRendering = (canvas: HTMLCanvasElement) => {
     erosionProgram.setUniform1i("u_fluidFlow", 1)
     erosionProgram.setUniform2f("u_mouse", rain() ? 1.0 : 0.0, 0.0)
     dataBuffers.draw()
+/* 
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, dataBuffers.readTexture)
+
+    // Sediment is transported by fluid flow
+    sedimentProgram.use()
+    sedimentProgram.setUniform2f("u_resolution", BUFFER_W, BUFFER_W)
+    sedimentProgram.setUniform1i("u_terrain", 0)
+    sedimentProgram.setUniform1i("u_fluidFlow", 1)
+    dataBuffers.draw() */
   }
 
 

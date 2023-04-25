@@ -15,7 +15,7 @@ uniform sampler2D u_fluidFlow;
 
 const float deltaT = 0.01;
 const float A = 1.0; // pipe cross section
-const float g = 0.1;
+const float g = 9.81;
 const float l = 1.0; // pipe length
 
 out vec4 outflowFlux;
@@ -40,23 +40,25 @@ void main() {
   vec2 terrainLeft = sampleTerrain(st + vec2(-offset.x, 0.0));
   vec2 terrainRight = sampleTerrain(st + vec2(offset.x, 0.0));
 
+  float effectiveHeightHere = terrainHere.r + terrainHere.g;
+
   vec4 deltaHeight = vec4( // right top left bottom
-    terrainRight.r + terrainRight.g - terrainHere.r - terrainHere.g,
-    terrainTop.r + terrainTop.g - terrainHere.r - terrainHere.g,
-    terrainLeft.r + terrainLeft.g - terrainHere.r - terrainHere.g,
-    terrainBottom.r + terrainBottom.g - terrainHere.r - terrainHere.g
+    effectiveHeightHere - (terrainRight.r  + terrainRight.g ),
+    effectiveHeightHere - (terrainTop.r    + terrainTop.g   ),
+    effectiveHeightHere - (terrainLeft.r   + terrainLeft.g  ),
+    effectiveHeightHere - (terrainBottom.r + terrainBottom.g)
   );
 
   vec4 flux = texture(u_fluidFlow, st);
 
-  vec4 resultingFlux = max(vec4(0.0), flux + deltaT * A * g * -deltaHeight / l);
+  vec4 resultingFlux = max(vec4(0.0), flux + deltaT * A * g * deltaHeight / l);
 
   float K = min(1.0, terrainHere.g / ((resultingFlux.r + resultingFlux.g + resultingFlux.b + resultingFlux.a) * deltaT));
 
   resultingFlux *= K;
 
   // not in paper: add some damping
-  resultingFlux *= 1.0 - min(1.0, squaredLength(resultingFlux) * 0.1);
+  // resultingFlux *= 1.0 - min(1.0, squaredLength(resultingFlux) * 0.1);
 
   outflowFlux = resultingFlux;
 }

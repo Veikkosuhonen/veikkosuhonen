@@ -67,8 +67,8 @@ float fbm(vec2 st) {
 }
 
 float baseHeightMap(in vec2 st) {
-  st.x += fbm(st) * 0.2;
-  st.y += fbm(st) * 0.2;
+  st.x += fbm(st) * 0.25;
+  st.y += fbm(st) * 0.25;
   float granularity = fbm(st * 2.0 + 40.0) * 0.15 + 0.45;
   float height = fbm(st, granularity) * 1.1;
   return height;
@@ -88,22 +88,12 @@ float canyonHeightMap(in vec2 st) {
 }
 
 float computeHeight(in vec2 st) {
-  float height = baseHeightMap(st);
+  float height = baseHeightMap(st) + 0.02;
 
   height -= canyonHeightMap(10.0 - st * 0.3);
   height -= canyonHeightMap(10.0 + st) * 0.5;
 
   return height;
-}
-
-float computeMultisampledHeight(in vec2 st) {
-  vec2 nudge = vec2(1.0, 0.0) / u_resolution;
-  float avg = 0.01;
-  avg += computeHeight(st + nudge.yy); // 0,0
-  avg += computeHeight(st + nudge.xy); // 1,0
-  avg += computeHeight(st + nudge.xx); // 1,1
-  avg += computeHeight(st + nudge.yx); // 0,1
-  return avg / 4.0;
 }
 
 void main() {

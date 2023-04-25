@@ -59,7 +59,7 @@ void main() {
   vec4 flux = texture(u_fluidFlow, st);
   float fluxTotal = flux.r + flux.g + flux.b + flux.a;
 
-  float totalWater = fluxTotal + data.g;
+  float totalWater = 2.0 * fluxTotal + data.g;
   float height = data.r;
 
   float distanceFromCenter =  length(st - vec2(0.5));
@@ -74,7 +74,7 @@ void main() {
   vec3 diffuse = vec3(0.2824, 0.3176, 0.2235);
   float specular = 0.0;
 
-  diffuse = mix(diffuse, vec3(0.0078, 0.2353, 0.0392), smoothstep(0.95, 1.6, normal.z + totalWater * 10.0));
+  diffuse = mix(diffuse, vec3(0.0078, 0.2353, 0.0392), smoothstep(0.8, 1.1, normal.z + totalWater));
   diffuse = mix(diffuse, vec3(0.5216, 0.4706, 0.3373), smoothstep(0.015, 0.0, abs(height) * normal.z));
   diffuse = mix(diffuse, vec3(0.3333, 0.3333, 0.3333), smoothstep(0.91, 0.70, (normal.z)));
 
@@ -89,17 +89,17 @@ void main() {
   diffuse *= light + ambientLight + skyLight;
 
   // water
-  if (height < 0.0 || totalWater > 0.1) {
-    float waterAmount = max(-height, totalWater * 1.0);
+  if (height < 0.0 || totalWater > 0.03) {
+    float waterAmount = max(-height, data.g / 10.0);
     vec3 waterColor = mix(vec3(0.1373, 0.3686, 0.5686), vec3(0.1176, 0.1843, 0.4588), min(waterAmount, 1.0));
 
-    float waterHitByLight = smoothstep(-0.01, 0.0, max(0.0, height * 0.1) - shadowHeight);
+    float waterHitByLight = smoothstep(-0.01, 0.0, max(0.0, height + data.g) - shadowHeight);
     float waterLight = sunLightAmount * waterHitByLight * max(0.0, dot(vec3(0.0, 0.0, 1.0), normalize(u_sunDirection)));
     float waterSkyLight = skyLightAmount;
     waterColor *= waterLight + ambientLight + waterSkyLight;
 
     diffuse /= (0.5 * waterAmount * waterAmount + 1.0);
-    diffuse = mix(diffuse, waterColor, min(6.0 * waterAmount * waterAmount + 0.75, 1.0));
+    diffuse = mix(diffuse, waterColor, min(5.0 * waterAmount * waterAmount + 0.7, 1.0));
   }
 
   // fog
@@ -112,6 +112,7 @@ void main() {
   // outColor = shadows * 1.2;
   //vec4 flux = texture(u_fluidFlow, st).rgba;
   //flux = step(flux, vec3(0.0));
-  // outColor = vec4(height, flux.r + flux.g + flux.b + flux.a, data.g * 100.0, 1.0);
+  //float heightLine = smoothstep(0.9, 1.0, fract(height * 15.0)) * 0.7;
+  //outColor = vec4(heightLine, data.g * 10.0, data.a * 2.0, 1.0);
  // outColor = vec4(vec3(data.r, (fl)), 1.0);
 }
