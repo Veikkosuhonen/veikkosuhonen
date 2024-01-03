@@ -2,7 +2,7 @@
   "name": "veikkosuhonen",
   "scripts": {
     "dev": "vinxi dev",
-    "build": "vinxi build",
+    "build": "vinxi build --preset vercel",
     "start": "vinxi start"
   },
   "type": "module",
@@ -21,7 +21,6 @@
     "classnames": "^2.3.2",
     "@solid-primitives/keyboard": "^1.1.0",
     "@solid-primitives/mouse": "^2.0.6",
-    "solid-start-vercel": "^0.3.10",
     "solid-heroicons": "^3.1.1",
     "solid-spring": "^0.0.7"
   },
