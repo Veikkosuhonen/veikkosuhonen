@@ -1,35 +1,31 @@
 {
   "name": "veikkosuhonen",
   "scripts": {
-    "dev": "solid-start dev",
-    "build": "solid-start build",
-    "start": "solid-start start"
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start"
   },
   "type": "module",
   "devDependencies": {
-    "autoprefixer": "^10.4.13",
-    "eslint": "^8.33.0",
-    "eslint-plugin-solid": "^0.9.4",
-    "postcss": "^8.4.21",
-    "solid-start-vercel": "^0.3.10",
-    "tailwindcss": "^3.2.4",
     "typescript": "^4.9.5",
-    "vite": "^4.4.6",
-    "vite-plugin-eslint": "^1.8.1"
+    "tailwindcss": "^3.3.3",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.26"
   },
   "dependencies": {
+    "@solidjs/meta": "^0.29.2",
+    "@solidjs/router": "^0.10.5",
+    "@solidjs/start": "^0.4.2",
+    "solid-js": "^1.8.7",
+    "vinxi": "0.0.59",
+    "classnames": "^2.3.2",
     "@solid-primitives/keyboard": "^1.1.0",
     "@solid-primitives/mouse": "^2.0.6",
-    "@solidjs/meta": "^0.29.1",
-    "@solidjs/router": "^0.8.2",
-    "classnames": "^2.3.2",
+    "solid-start-vercel": "^0.3.10",
     "solid-heroicons": "^3.1.1",
-    "solid-js": "^1.8.5",
-    "solid-spring": "^0.0.7",
-    "solid-start": "^0.3.1",
-    "undici": "^5.11.0"
+    "solid-spring": "^0.0.7"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

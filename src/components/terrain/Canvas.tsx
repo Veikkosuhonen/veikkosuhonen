@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from "solid-js"
+import { createEffect, createSignal, onCleanup, onMount } from "solid-js"
 import { toast } from "../Toasts"
 import { TextureFormats, createFrameBuffer, createQuad } from "~/graphics/glUtils"
 import { createMousePosition } from "@solid-primitives/mouse"
@@ -17,7 +17,7 @@ export const [frameTime, setFrameTime] = createSignal(0)
 const BUFFER_W = 1280
 const SHADOW_BUFFER_W = 1080
 
-const [keys] = useKeyDownList();
+const keys = useKeyDownList();
 const mouse = createMousePosition(canvasElement());
 
 const processInput = (deltaTime: number) => {
@@ -27,16 +27,20 @@ const processInput = (deltaTime: number) => {
   let rain = false
   keys().forEach(key => {
     switch (key) {
-      case "W"||"up":
+      case "W":
+      case "ARROWUP":
         deltaY += 1.0;
         break;
-      case "D"||"right":
+      case "D":
+      case "ARROWRIGHT":
         deltaX += 1.0;
         break;
-      case "A"||"left":
+      case "A":
+      case "ARROWLEFT":
         deltaX -= 1.0;
         break;
-      case "S"||"down":
+      case "S":
+      case "ARROWDOWN":
         deltaY -= 1.0;
         break;
       case "E":

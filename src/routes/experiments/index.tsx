@@ -1,0 +1,131 @@
+import { createMousePosition, createPositionToElement } from "@solid-primitives/mouse";
+import { Component, createSignal } from "solid-js"
+import { createSpring, animated, config } from "solid-spring";
+
+const experiments = [
+  {
+    title: "Music visualizer",
+    path: "/experiments/visualiser",
+    imageUrl: "https://live.staticflickr.com/65535/53440195470_913e1b6326_b.jpg",
+    text: "A WebGL music visualizer using web audio api. File & microphone support, and lots of tweakable sliders!"
+  },
+  {
+    title: "Terrain generator",
+    path: "/experiments/terrain",
+    imageUrl: "https://live.staticflickr.com/65535/53440195480_77687ee61f_b.jpg",
+    text: "Interactive terrain simulation with procedural generation, erosion and lighting. A little demonstration of how plain old WebGL can be used for general-purpose GPU compute."
+  },
+]
+
+const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
+  let cardElement: HTMLDivElement|undefined
+  const mouse = createMousePosition(cardElement);
+  const relative = createPositionToElement(() => cardElement, () => mouse);
+  const [rotation, setRotation] = createSignal([0, 0])
+  const [flip, set] = createSignal(false);
+
+  const styles = createSpring(() => ({
+    to: {
+      transform: `rotateX(${-rotation()[1]}deg) rotateY(${rotation()[0]}deg)`,
+    },
+    from: {
+      transform: `rotateX(0deg) rotateY(0deg)`,
+    },
+    config: config.wobbly,
+  }));
+
+  const spring = createSpring(() => ({
+    from: {
+      x: 0,
+      y: 0,
+    },
+    x: 100,
+    y: 100,
+    config: {
+      tension: 100,
+      friction: 10,
+    },
+    reset: true,
+  }))
+
+  const updateRotation = () => {
+    if (!cardElement || !mouse.isInside) return
+    const x = relative.x / cardElement.offsetWidth - 0.5
+    const y = relative.y / cardElement.offsetHeight - 0.5
+    setRotation([x * 30, y * 30])
+  }
+
+  return (
+    <div class="overflow-visible w-100 h-100" ref={cardElement} style={{ perspective: "800px" }} onMouseLeave={() => setRotation([0, 0])}>
+      <animated.a 
+        href={props.path}
+        class="w-100 h-100 rounded-md shadow-xl shadow-slate-800/50 hover:shadow-fuchsia-500/50 border border-black hover:border-fuchsia-200 text-transparent hover:text-white text-4xl font-bold flex items-center justify-center px-8 py-16 transition-colors duration-200 z-10"
+        style={{ transform: styles().transform, "background-image": `url(${props.imageUrl})`, "background-size": "cover", "mix-blend-mode": "multiply" }}
+        onMouseMove={updateRotation}
+      >
+        {props.title}
+      </animated.a>
+    </div>
+  )
+}
+
+const Experiment: Component<{ title: string, path: string, imageUrl: string, text: string }>  = (props) => {
+  const [expanded, setExpanded] = createSignal(false)
+  let timeoutId: number|undefined
+
+  const styles = createSpring(() => ({
+    to: {
+      translateY: expanded() ? 0 : -100,
+      opacity: expanded() ? 1 : 0,
+    },
+    from: {
+      translateY: -100,
+      opacity: 0,
+    },
+    config: config.gentle,
+  }));
+
+  const onMouseEnter = () => {
+    clearTimeout(timeoutId)
+    setExpanded(true)
+  }
+
+  const onMouseLeave = () => {
+    timeoutId = setTimeout(() => setExpanded(false), 1000) as any as number
+  }
+
+  return (
+    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} class="aspect-[3/2] w-[30vw]">
+      <div class="rounded-lg bg-slate-900 px-2 pt-1 pb-2">
+        <ImageLink title={props.title} path={props.path} imageUrl={props.imageUrl}/>
+      </div>
+      <animated.p class="text-slate-200 font-light rounded-lg p-4 mt-2 -z-10 bg-slate-900/90" style={styles()}>
+        {props.text}
+      </animated.p>
+    </div>
+  )
+}
+
+export default function Experiments() {
+  
+
+  return (
+
+    <main class="flex-grow relative px-16">
+      <h1 class="font-bold text-sm mt-8 text-slate-200">
+        Experiments
+      </h1>
+      <p class="text-slate-200 mb-8 mt-4 w-96 font-light">
+        This is a small collection of some graphics-related web experiments I've made for fun, and put on this website.
+      </p>
+      <section>
+        <div class="flex gap-4 mb-4">
+          {experiments.map((experiment) => (
+            <Experiment title={experiment.title} path={experiment.path} imageUrl={experiment.imageUrl} text={experiment.text} />
+          ))}
+        </div>
+      </section>
+    </main>
+  )
+}
+  
