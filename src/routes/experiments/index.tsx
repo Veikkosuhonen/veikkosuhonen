@@ -15,6 +15,12 @@ const experiments = [
     imageUrl: "https://live.staticflickr.com/65535/53440195480_77687ee61f_b.jpg",
     text: "Interactive terrain simulation with procedural generation, erosion and lighting. A little demonstration of how plain old WebGL can be used for general-purpose GPU compute."
   },
+  {
+    title: "A&A combat simulator",
+    path: "/experiments/aa-combat-sim",
+    imageUrl: "https://live.staticflickr.com/65535/53440195475_6e3c8e7c8e_b.jpg",
+    text: "A simple Axis & Allies combat simulator."
+  }
 ]
 
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
