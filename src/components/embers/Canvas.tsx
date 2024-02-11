@@ -28,7 +28,7 @@ const bbColors = [
     "#ffcc99",
 ].reverse()
 
-const getBBColor = (frame: number) => bbColors[Math.min(bbColors.length - 1, Math.round(frame / 40))]
+const getBBColor = (frame: number) => bbColors[Math.min(bbColors.length - 1, Math.round(frame / 20))]
 
 export const EmbersCanvas: Component<{ embersOn: boolean }> = (props) => {
     let canvas: HTMLCanvasElement|undefined;
@@ -107,7 +107,7 @@ export const EmbersCanvas: Component<{ embersOn: boolean }> = (props) => {
     })
 
     return (
-        <div class="fixed top-0 w-full h-screen -z-50 blur">
+        <div class="fixed top-0 w-full h-screen -z-50 blur-md">
             <canvas style={{ background: "black" }} width={w()} height={h()} ref={canvas} class="bg-transparent fixed top-0 w-full h-screen -z-50"/>
         </div>
     )

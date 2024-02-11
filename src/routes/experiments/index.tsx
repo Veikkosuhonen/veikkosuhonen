@@ -6,19 +6,19 @@ const experiments = [
   {
     title: "Music visualizer",
     path: "/experiments/visualiser",
-    imageUrl: "https://live.staticflickr.com/65535/53440195470_913e1b6326_b.jpg",
+    imageUrl: "https://live.staticflickr.com/65535/53454330580_a754211f15_k.jpg",
     text: "A WebGL music visualizer using web audio api. File & microphone support, and lots of tweakable sliders!"
   },
   {
     title: "Terrain generator",
     path: "/experiments/terrain",
-    imageUrl: "https://live.staticflickr.com/65535/53440195480_77687ee61f_b.jpg",
+    imageUrl: "https://live.staticflickr.com/65535/53453915506_a6ee5ec899_h.jpg",
     text: "Interactive terrain simulation with procedural generation, erosion and lighting. A little demonstration of how plain old WebGL can be used for general-purpose GPU compute."
   },
   {
     title: "A&A combat simulator",
     path: "/experiments/aa-combat-sim",
-    imageUrl: "https://live.staticflickr.com/65535/53440195475_6e3c8e7c8e_b.jpg",
+    imageUrl: "https://live.staticflickr.com/65535/53522237177_8ffbc5dc64_k.jpg",
     text: "A simple Axis & Allies combat simulator."
   }
 ]

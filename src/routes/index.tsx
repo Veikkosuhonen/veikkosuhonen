@@ -6,7 +6,7 @@ import { EmbersCanvas } from "~/components/embers/Canvas"
 
 export default function Home() {
 
-  const [embersOn, setEmbersOn] = createSignal(true);
+  const [embersOn, setEmbersOn] = createSignal(false);
   let yearsProgrammed = new Date().getFullYear() - 2015
   let yearsStudied = new Date().getFullYear() - 2019
 
