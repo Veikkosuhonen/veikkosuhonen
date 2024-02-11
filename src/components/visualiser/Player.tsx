@@ -36,7 +36,7 @@ const Player: Component<{ audio: HTMLAudioElement|null, name: string|null, durat
   return (
     <div class={cn("fixed top-0 left-0 w-screen h-screen flex place-items-center place-content-center transition-opacity duration-700", (props.audio || props.isMicrophone) ? "opacity-100" : "opacity-25")}>
       <div class="flex flex-col items-center w-full">
-        <div class="text-slate-300 text-sm sm:text-base md:text-lg lg:text-xl p-2 select-none">
+        <div class="text-slate-400 text-light text-sm sm:text-base md:text-lg lg:text-xl p-2 select-none">
           {props.name?.slice(0, props.name.lastIndexOf('.')) ?? (props.isMicrophone ? "Listening to your microphone" : "Select a track to play or turn on microphone")}
         </div>
         

@@ -1,15 +1,42 @@
+import { Icon } from "solid-heroicons"
+import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
+
 export default function Home() {
+
+  let yearsProgrammed = new Date().getFullYear() - 2015
+  let yearsStudied = new Date().getFullYear() - 2019
 
   return (
 
-    <main class="flex-grow relative">
-      <div class="px-16">
-        <h1 class="text-lg font-bold mt-8">Hi and welcome to my website!</h1>
-        <p class="font-light mt-6">
-          I don't write blogs nor have much socials for you to follow. 
-          This is just a place for me to put some of my projects and experiments.
+    <main class="flex-grow relative mt-12">
+      <article class="px-16 font-light container mx-auto">
+        <h1 class="text-4xl mt-8 font-serif">Hi and welcome to my website!</h1>
+        <p class="mt-8">
+          This site is mainly for random browser apps I sometimes get an irresistible urge to make, and for some of that portfolio stuff. I might even write a blogpost one day.
         </p>
-      </div>
+        <h2 class="text-4xl mt-16 font-serif">About me</h2>
+        <p class="mt-8">
+          I'm Veikko, a software engineer from Helsinki, Finland with a positive look on life, the universe and everything.
+          Like everybody else, I mostly work in the JavaScript land as a fullstack developer, 
+          enjoying the holistic approach to solving real problems with tech. 
+          <br/>
+          <span class="text-xs">I won't bother namedropping the technologies, you can visit my 
+          <a href="https://linkedin.com/in/veikko-suhonen-394751230" target="_blank" class="underline text-indigo-300">LinkedIn page <Icon path={arrowTopRightOnSquare} style="width: 12px; display: inline;"/></a></span>
+        </p>
+        <p class="mt-8">
+          I've been studying computer science for <span>{yearsStudied}</span> years, with <span>{yearsProgrammed}</span> years of experience in programming.
+          During that time, I've most enjoyed 
+          <span>graphics & game programming</span>, <span>shader development</span>, writing a <a>compiler from scratch</a> and building a bunch of web apps.
+          Some of the stuff I do is public at <a href="https://github.com/Veikkosuhonen" target="_blank" class="underline text-fuchsia-400">github.com/Veikkosuhonen <Icon path={arrowTopRightOnSquare} style="width: 12px; display: inline;"/></a>
+        </p>
+        <p class="mt-8">
+          When I was a kid, I wanted to be a scientist. That hasn't really changed, 
+          I think that the scientific method and quest for new knowledge and truth are the philosophies to live by.
+          <br/>
+          Lately I've been a little bit into astronomy and astrophotography and want to eventually develop my own 
+          <a>lucky-imaging</a> software stack. Stay tuned for any results...
+        </p>
+      </article>
       
     </main>
   )

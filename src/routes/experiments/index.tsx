@@ -62,7 +62,7 @@ const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  =
   }
 
   return (
-    <div class="overflow-visible w-100 h-100" ref={cardElement} style={{ perspective: "800px" }} onMouseLeave={() => setRotation([0, 0])}>
+    <div class="overflow-visible w-100 h-100 font-serif" ref={cardElement} style={{ perspective: "800px" }} onMouseLeave={() => setRotation([0, 0])}>
       <animated.a 
         href={props.path}
         class="w-100 h-100 rounded-md shadow-xl shadow-slate-800/50 hover:shadow-fuchsia-500/50 border border-black hover:border-fuchsia-200 text-transparent hover:text-white text-4xl font-bold flex items-center justify-center px-8 py-16 transition-colors duration-200 z-10"
@@ -117,20 +117,22 @@ export default function Experiments() {
 
   return (
 
-    <main class="flex-grow relative px-16">
-      <h1 class="font-bold text-sm mt-8 text-slate-200">
-        Experiments
-      </h1>
-      <p class="text-slate-200 mb-8 mt-4 w-96 font-light">
-        This is a small collection of some graphics-related web experiments I've made for fun, and put on this website.
-      </p>
-      <section>
-        <div class="flex gap-4 mb-4">
-          {experiments.map((experiment) => (
-            <Experiment title={experiment.title} path={experiment.path} imageUrl={experiment.imageUrl} text={experiment.text} />
-          ))}
-        </div>
-      </section>
+    <main class="flex-grow relative mt-12">
+      <article class="container mx-auto">
+        <h1 class="text-6xl font-serif mt-8">
+          Experiments
+        </h1>
+        <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
+          This is a small collection of some graphics-related web experiments I've made for fun, and put on this website.
+        </p>
+        <section>
+          <div class="flex gap-4 mb-4">
+            {experiments.map((experiment) => (
+              <Experiment title={experiment.title} path={experiment.path} imageUrl={experiment.imageUrl} text={experiment.text} />
+            ))}
+          </div>
+        </section>
+      </article>
     </main>
   )
 }
