@@ -1,16 +1,25 @@
 import { Icon } from "solid-heroicons"
+import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
+import { createSignal } from "solid-js"
+import { EmbersCanvas } from "~/components/embers/Canvas"
 
 export default function Home() {
 
+  const [embersOn, setEmbersOn] = createSignal(true);
   let yearsProgrammed = new Date().getFullYear() - 2015
   let yearsStudied = new Date().getFullYear() - 2019
 
   return (
 
-    <main class="flex-grow relative mt-12">
+    <main class="flex-grow flex flex-col relative mt-12">
       <article class="px-16 font-light container mx-auto">
-        <h1 class="text-4xl mt-8 font-serif">Hi and welcome to my website!</h1>
+        <h1 class="text-4xl mt-8 font-serif flex gap-4">
+          Hi and welcome to my website!
+          <button onClick={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
+            <Icon path={sparkles} style="width: 24px"/>
+          </button>
+        </h1>
         <p class="mt-8">
           This site is mainly for random browser apps I sometimes get an irresistible urge to make, and for some of that portfolio stuff. I might even write a blogpost one day.
         </p>
@@ -37,7 +46,7 @@ export default function Home() {
           <a>lucky-imaging</a> software stack. Stay tuned for any results...
         </p>
       </article>
-      
+      <EmbersCanvas embersOn={embersOn()} />
     </main>
   )
 }
