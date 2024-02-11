@@ -44,7 +44,7 @@ export const EmbersCanvas: Component<{ embersOn: boolean }> = (props) => {
         const resize = () => {
             setW(window.innerWidth / 4);
             setH(window.innerHeight / 4);
-            console.log(w(), h())
+            // console.log(w(), h())
         }
         window.addEventListener("resize", resize)
         resize()
