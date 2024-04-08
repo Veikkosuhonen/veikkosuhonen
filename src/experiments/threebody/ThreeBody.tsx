@@ -26,14 +26,15 @@ class OrbitalBody {
   velocity: THREE.Vector3
   force: THREE.Vector3
   mesh: THREE.Mesh
+  trail: THREE.Points | null
 
-
-  constructor(mass: number, position: THREE.Vector3, velocity: THREE.Vector3, mesh: THREE.Mesh) {
+  constructor(mass: number, position: THREE.Vector3, velocity: THREE.Vector3, mesh: THREE.Mesh, trail: THREE.Points | null = null) {
     this.mass = mass
     this.position = position
     this.velocity = velocity
     this.mesh = mesh
     this.force = new THREE.Vector3()
+    this.trail = trail
   }
 
   updateForce(other: OrbitalBody) {
@@ -53,7 +54,30 @@ class OrbitalBody {
 
   updateMesh() {
     this.mesh.position.copy(this.position)
+
+    if (this.trail) {
+      const positions = this.trail.geometry.attributes.position.array as Float32Array
+      for (let i = positions.length - 3; i >= 3; i -= 3) {
+        positions[i] = positions[i - 3]
+        positions[i + 1] = positions[i - 2]
+        positions[i + 2] = positions[i - 1]
+      }
+      positions[0] = this.mesh.position.x
+      positions[1] = this.mesh.position.y
+      positions[2] = this.mesh.position.z
+      this.trail.geometry.attributes.position.needsUpdate = true
+    }
   }
+}
+
+const createTrail = (length: number, color: number) => {
+  const geometry = new THREE.BufferGeometry()
+  const positions = new Float32Array(length * 3)
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+  const material = new THREE.PointsMaterial({ color: color, side: THREE.BackSide, sizeAttenuation: true, size: 0.2, depthTest: false})
+  const trail = new THREE.Points(geometry, material)
+  return trail
 }
 
 const createStar = (name: string, mass: number, position: THREE.Vector3, velocity: THREE.Vector3, color: number, radius: number) => {
@@ -72,7 +96,9 @@ const createStar = (name: string, mass: number, position: THREE.Vector3, velocit
   label.position.set(0, 0, 0)
   mesh.add(label)
 
-  return new OrbitalBody(mass, position, velocity, mesh)
+  const trail = createTrail(1000, color)
+
+  return new OrbitalBody(mass, position, velocity, mesh, trail)
 }
 
 const createPlanet = (mass: number, position: THREE.Vector3, velocity: THREE.Vector3, color: number, radius: number) => {
@@ -89,7 +115,9 @@ const createPlanet = (mass: number, position: THREE.Vector3, velocity: THREE.Vec
   label.position.set(0, 0, 0)
   mesh.add(label)
 
-  return new OrbitalBody(mass, position, velocity, mesh)
+  const trail = createTrail(1000, color)
+
+  return new OrbitalBody(mass, position, velocity, mesh, trail)
 }
 
 const start = () => {
@@ -97,11 +125,13 @@ const start = () => {
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  camera.frustumCulled = false
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
     antialias: false,
     stencil: false,
-    depth: false
+    depth: true,
+    logarithmicDepthBuffer: true,
   })
 
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -135,15 +165,15 @@ const start = () => {
     'Alpha Centauri', 
     1.1 * M_sun, 
     new THREE.Vector3(0, 0, 0), 
-    new THREE.Vector3(0, 0, 0), 
+    new THREE.Vector3(0, 0, -0.1), 
     0xfff0e9, 
     1.2175
   )
   const betaCentauri = createStar(
     'Beta Centauri', 
     0.907 * M_sun, 
-    new THREE.Vector3(3.5 * -AU, 0.2 * AU, -0.2 * AU), 
-    new THREE.Vector3(0.1, 0.1, 0.4), 
+    new THREE.Vector3(3 * -AU, 0.2 * AU, -0.2 * AU), 
+    new THREE.Vector3(0.1, 0.1, 0.35), 
     0xffe8d5, 
     0.8591
   )
@@ -151,7 +181,7 @@ const start = () => {
     'Proxima Centauri', 
     0.122 * M_sun, 
     new THREE.Vector3(3 * AU, -0.2 * AU, 0.2 * AU), 
-    new THREE.Vector3(-0.1, -0.2, -0.1), 
+    new THREE.Vector3(-0.1, -0.2, 0.1), 
     0xffb46b, 
     0.1542
   )
@@ -162,7 +192,15 @@ const start = () => {
     proximaCentauri,
     createPlanet(M_earth, new THREE.Vector3(AU * 0.8, 0, 0), new THREE.Vector3(0, 0, 0.6), 0xa0a0a0, 0.2),
   ]
-  orbitalBodies.forEach(body => scene.add(body.mesh))
+  const system = new THREE.Group()
+  scene.add(system)
+
+  orbitalBodies.forEach(body => {
+    system.add(body.mesh)
+    if (body.trail) {
+      system.add(body.trail)
+    }
+  })
 
 
   const labelRenderer = new CSS2DRenderer();
@@ -216,10 +254,7 @@ const start = () => {
 
     centerOfMass.divideScalar(totalMass)
 
-    // Sub position by center of mass
-    orbitalBodies.forEach((body, idx) => {
-      body.mesh.position.sub(centerOfMass)
-    })
+    system.position.copy(centerOfMass.clone().negate())
 
     labelRenderer.render(scene, camera);
     composer.render();
