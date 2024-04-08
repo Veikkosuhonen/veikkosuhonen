@@ -1,4 +1,4 @@
-import AACombatSim from "~/components/aaCombatSim/AACombatSim";
+import AACombatSim from "~/experiments/aaCombatSim/AACombatSim";
 
 export default function AACombatSimExperiment() {
   return (

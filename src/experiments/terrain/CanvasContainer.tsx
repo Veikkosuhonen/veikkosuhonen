@@ -1,6 +1,6 @@
 import { onMount } from "solid-js"
 import Canvas, { frameTime } from "./Canvas"
-import Toasts, { toast } from "../Toasts"
+import Toasts, { toast } from "../../components/Toasts"
 
 export default function CanvasContainer() {
   onMount(() => toast("Hi there!"))

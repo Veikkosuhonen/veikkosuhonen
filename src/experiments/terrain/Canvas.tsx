@@ -1,5 +1,5 @@
 import { createEffect, createSignal, onCleanup, onMount } from "solid-js"
-import { toast } from "../Toasts"
+import { toast } from "../../components/Toasts"
 import { TextureFormats, createFrameBuffer, createQuad } from "~/graphics/glUtils"
 import { createMousePosition } from "@solid-primitives/mouse"
 import { useKeyDownList } from "@solid-primitives/keyboard"

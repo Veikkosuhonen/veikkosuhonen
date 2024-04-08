@@ -1,4 +1,4 @@
-import CanvasContainer from "~/components/terrain/CanvasContainer"
+import CanvasContainer from "~/experiments/terrain/CanvasContainer"
 
 export default function Terrain() {
   return (

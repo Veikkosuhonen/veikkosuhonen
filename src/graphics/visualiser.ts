@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js"
-import { getFrequencyData } from "~/components/visualiser/Audio"
+import { getFrequencyData } from "~/experiments/visualiser/Audio"
 import { toast } from "~/components/Toasts"
 import shaders from "./shaders"
 import { createFrameBuffer, createProgram, createQuad, TextureFormats } from "./glUtils"

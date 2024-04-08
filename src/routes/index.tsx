@@ -2,7 +2,7 @@ import { Icon } from "solid-heroicons"
 import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
 import { createSignal } from "solid-js"
-import { EmbersCanvas } from "~/components/embers/Canvas"
+import { EmbersCanvas } from "~/experiments/embers/Canvas"
 
 export default function Home() {
 

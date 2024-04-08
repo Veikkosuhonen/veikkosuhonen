@@ -1,5 +1,5 @@
 import cn from "classnames";
-import { Component, createSignal, For, onMount, Show } from "solid-js";
+import { Component, createSignal, For, onMount } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 let nextId = 0;

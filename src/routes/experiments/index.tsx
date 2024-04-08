@@ -20,15 +20,19 @@ const experiments = [
     path: "/experiments/aa-combat-sim",
     imageUrl: "https://live.staticflickr.com/65535/53522237177_8ffbc5dc64_k.jpg",
     text: "A simple Axis & Allies combat simulator."
+  },
+  {
+    title: "Three-body problem",
+    path: "/experiments/threebody",
+    imageUrl: "https://live.staticflickr.com/65535/53641516895_18e82c9df5_h.jpg",
+    text: "Visit Alpha Centauri AKA Trisolaris and see the three-body problem in action."
   }
 ]
-
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
   let cardElement: HTMLDivElement|undefined
   const mouse = createMousePosition(cardElement);
   const relative = createPositionToElement(() => cardElement, () => mouse);
   const [rotation, setRotation] = createSignal([0, 0])
-  const [flip, set] = createSignal(false);
 
   const styles = createSpring(() => ({
     to: {
@@ -39,20 +43,6 @@ const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  =
     },
     config: config.wobbly,
   }));
-
-  const spring = createSpring(() => ({
-    from: {
-      x: 0,
-      y: 0,
-    },
-    x: 100,
-    y: 100,
-    config: {
-      tension: 100,
-      friction: 10,
-    },
-    reset: true,
-  }))
 
   const updateRotation = () => {
     if (!cardElement || !mouse.isInside) return
