@@ -54,7 +54,7 @@ const Player: Component<{ audio: HTMLAudioElement|null, name: string|null, durat
         />
 
         <div>
-          <button onClick={props.togglePlay} class="m-1 p-1 text-slate-400 hover:text-slate-300 transition-colors duration-500" disabled={!props.duration}>
+          <button onMouseDown={props.togglePlay} class="m-1 p-1 text-slate-400 hover:text-slate-300 transition-colors duration-500" disabled={!props.duration}>
             <Show when={props.isPlaying} fallback={<ScalingIcon path={play} />}>
               <ScalingIcon path={pause} />
             </Show>

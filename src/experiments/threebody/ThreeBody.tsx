@@ -287,8 +287,8 @@ export default function ThreeBody() {
       </div>
       <div class="absolute left-1/2 ">
         <div class="flex gap-2 text-white text-lg">
-          <button onClick={() => setSimulationSpeed(simulationSpeed() / 2)} class="text-slate-300 bg-black bg-opacity-50 p-2 rounded-md hover:text-white">{slowerStr}</button>
-          <button onClick={() => setSimulationSpeed(simulationSpeed() * 2)} class="text-slate-300 bg-black bg-opacity-50 p-2 rounded-md hover:text-white">{fasterStr}</button>
+          <button onMouseDown={() => setSimulationSpeed(simulationSpeed() / 2)} class="text-slate-300 bg-black bg-opacity-50 p-2 rounded-md hover:text-white">{slowerStr}</button>
+          <button onMouseDown={() => setSimulationSpeed(simulationSpeed() * 2)} class="text-slate-300 bg-black bg-opacity-50 p-2 rounded-md hover:text-white">{fasterStr}</button>
         </div>
       </div>
     </div>

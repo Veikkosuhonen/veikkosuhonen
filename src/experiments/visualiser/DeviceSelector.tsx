@@ -47,7 +47,7 @@ const DeviceSelector: Component<{
 
   return (
     <div class="relative">
-      <Button onClick={onOpen} isDown={!!props.deviceId}>{currentDevice()?.label ?? "Select input device"}</Button>
+      <Button onMouseDown={onOpen} isDown={!!props.deviceId}>{currentDevice()?.label ?? "Select input device"}</Button>
       <Show when={open()}>
         <div class="absolute">
           <Surface>
@@ -55,7 +55,7 @@ const DeviceSelector: Component<{
               fallback={<span>No devices!</span>}
             >{device => (
                 <div class="mb-1">
-                  <Button onClick={() => onSelect(device)}>{device.label}</Button>
+                  <Button onMouseDown={() => onSelect(device)}>{device.label}</Button>
                 </div>
               )}</For>
           </Surface>

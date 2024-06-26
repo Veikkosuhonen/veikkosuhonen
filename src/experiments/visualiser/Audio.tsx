@@ -197,7 +197,7 @@ export default function AudioPlayer() {
               <input id="audioFile" type="file" onChange={onAudioUpload} accept="audio/*" class="hidden"/>
             </label>
             <DeviceSelector deviceId={deviceId()} selectDevice={onDeviceSelect} />
-            <Button onClick={toggleMicrophone} disabled={false}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
+            <Button onMouseDown={toggleMicrophone} disabled={false}>{microphoneOn() ? "Turn off mic" : "Turn on mic"}</Button>
           </div>
         </Surface>
       </div>

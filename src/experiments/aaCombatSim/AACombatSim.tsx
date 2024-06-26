@@ -261,7 +261,7 @@ export default function AACombatSim() {
       <div class="flex mb-16">
         <ArmyPicker army={attacker} setArmy={setAttacker} handleArmyChange={handleArmyChange} />
         <div class="flex items-center">
-          <button class="rounded-md border border-stone-500 p-2 text-sm" onClick={handleSwapSides}>
+          <button class="rounded-md border border-stone-500 p-2 text-sm" onMouseDown={handleSwapSides}>
             Swap sides
           </button>
         </div>
@@ -272,27 +272,27 @@ export default function AACombatSim() {
         <div class="basis-1/5 bg-stone-900 m-1 p-4">
           <Show when={!battleState.result || isSimulating()} fallback={<>
             <p class="mb-2">{battleState.result} in {battleState.rounds.length} rounds</p>
-            <button onClick={handleResetBattle} class="bg-red-900 p-2 rounded-md mb-2 hover:bg-red-700 shadow-md hover:shadow-red-700/50">
+            <button onMouseDown={handleResetBattle} class="bg-red-900 p-2 rounded-md mb-2 hover:bg-red-700 shadow-md hover:shadow-red-700/50">
               Restart battle
             </button>
           </>}>
             <button 
               disabled={isSimulating()}
-              onClick={handleRound}
+              onMouseDown={handleRound}
               class="w-full bg-red-900 p-2 rounded-md mb-2 hover:bg-red-700 shadow-md hover:shadow-red-700/50"
             >
               Roll
             </button>
             <button 
               disabled={isSimulating()}
-              onClick={handlePlayToEnd}
+              onMouseDown={handlePlayToEnd}
               class="w-full p-1 rounded-md mb-2 border border-red-900 hover:border-red-700 text-xs"
             >
               Play to end
             </button>
             <button 
               disabled={isSimulating()}
-              onClick={() => handlePlayNTimes(100)}
+              onMouseDown={() => handlePlayNTimes(100)}
               class="w-full p-1 rounded-md mb-2 border border-red-900 hover:border-red-700 text-xs"
             >
               Play 100 times

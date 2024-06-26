@@ -16,7 +16,7 @@ export default function Home() {
       <article class="px-8 font-light container mx-auto">
         <h1 class="text-4xl mt-8 font-serif flex gap-4">
           Hi and welcome to my website!
-          <button onClick={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
+          <button onMouseDown={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
             <Icon path={sparkles} style="width: 24px"/>
           </button>
         </h1>
