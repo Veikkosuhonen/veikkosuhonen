@@ -26,7 +26,13 @@ const experiments = [
     path: "/experiments/threebody",
     imageUrl: "https://live.staticflickr.com/65535/53641516895_18e82c9df5_h.jpg",
     text: "Visit Alpha Centauri AKA Trisolaris and see the three-body problem in action."
-  }
+  },
+  {
+    title: "Water",
+    path: "/experiments/water",
+    imageUrl: "https://live.staticflickr.com/65535/53902317358_e47eaadf6a_h.jpg",
+    text: "Wireframe ocean"
+  },
 ]
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
   let cardElement: HTMLDivElement|undefined

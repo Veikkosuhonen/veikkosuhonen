@@ -10,10 +10,10 @@
 		"allowJs": true,
 		"noEmit": true,
 		"strict": true,
-		"types": ["vinxi/client"],
+		"types": ["vinxi/client", "vite-plugin-glsl/ext"],
 		"isolatedModules": true,
 		"paths": {
       "~/*": ["./src/*"]
-    }
+    },
 	}
 }
