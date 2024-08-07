@@ -9,9 +9,9 @@ const vertexShader = /* glsl */`
 #define _WaveD vec4(0.5, 0.2, 0.05, 10.3)
 #define _WaveE vec4(0.5, 0.1, 0.05, 6.4)
 #define _WaveF vec4(0.5, 0.0, 0.05, 4.5)
-#define _WaveG vec4(0.5, 0.1, 0.05, 2.6)
-#define _WaveH vec4(0.5, 0.2, 0.05, 1.7)
-#define _WaveI vec4(0.5, 0.3, 0.05, 0.8)
+#define _WaveG vec4(0.5, 0.11, 0.05, 2.6)
+#define _WaveH vec4(0.5, 0.22, 0.05, 1.7)
+#define _WaveI vec4(0.5, 0.33, 0.05, 0.8)
 
 #define _WaveBend 0.1
 #define _WaveBendLength 0.1
@@ -159,7 +159,7 @@ void main() {
 
     // Foam
     vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb;
-    waterColor += foamColor * smoothstep(0.005, 0.04, vPeak);
+    waterColor += foamColor * smoothstep(0.002, 0.04, vPeak);
 
     vec3 color = fresnelColor + specularColor + waterColor;
 

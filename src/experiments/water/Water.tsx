@@ -1,7 +1,7 @@
 import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect } from "postprocessing"
 import { createSignal, onMount } from "solid-js"
 import * as THREE from 'three'
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { MapControls } from "three/examples/jsm/controls/MapControls"
 import { createWaterChunkArea, WaterChunk } from "./WaterChunk"
 import waterMaterial from "./materials/water"
 
@@ -9,7 +9,7 @@ const start = () => {
   const canvas = document.getElementById('water') as HTMLCanvasElement
 
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.5, 1000)
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.5, 1200)
   camera.frustumCulled = true
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
@@ -44,7 +44,7 @@ const start = () => {
 
   camera.position.y = 10;
   camera.position.z = -10;
-  const controls = new OrbitControls(camera, canvas);
+  const controls = new MapControls(camera, canvas);
   controls.target.set(0, 0, 0);
   controls.update();
 
@@ -52,7 +52,8 @@ const start = () => {
   const animate: FrameRequestCallback = (time) => {
     requestAnimationFrame(animate)
 
-    waterChunks.forEach(wc => wc.update(camera.position));
+    const initialDistance = camera.position.distanceTo(controls.target);
+    waterChunks.forEach(wc => wc.update(controls.target, initialDistance));
     waterMaterial.uniforms.u_time.value = time / 1500.0;
   
     composer.render()
@@ -83,9 +84,12 @@ export default function Water() {
         <canvas id="water" class="bg-transparent fixed top-0 w-full h-screen"></canvas>
         <div id="hud"/>
       </div>
-      <div class="absolute">
-        <p class="ml-4 mt-4 text-slate-400">{frameTime().toFixed(1)} ms</p>
-        <p class="ml-4 text-slate-400">Drag to pan, scroll to zoom</p>
+      <div class="absolute text-amber-500 font-bold bg-slate-900/50 p-2 m-2 rounded-md">
+        <p>{frameTime().toFixed(1)} ms</p>
+        <p>Drag to pan, scroll to zoom</p>
+        <button class="mt-4 p-1 border border-amber-500 rounded-md" onClick={() => {
+          waterMaterial.wireframe = !waterMaterial.wireframe
+        }}>Toggle wireframe</button>
       </div>
     </div>
   )

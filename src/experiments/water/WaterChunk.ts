@@ -2,12 +2,12 @@ import * as THREE from 'three'
 import waterMaterial from "./materials/water"
 
 const LOD_RANGE0 = 900;
-const LOD_MAX_DEPTH = 5;
+const LOD_MAX_DEPTH = 4;
 
 const THRESHOLD = 0.1;
 
-const WIDTH = 200;
-const HEIGHT = 200;
+const WIDTH = 160;
+const HEIGHT = 160;
 const widthSegments = 46;
 const heightSegments = 46;
 const geometry = new THREE.PlaneGeometry(WIDTH, HEIGHT, widthSegments, heightSegments);
@@ -47,14 +47,14 @@ export class WaterChunk extends THREE.Group {
     this.worldPosition = worldPosition;
   }
 
-  update(cameraPosition: THREE.Vector3) {
+  update(targetPosition: THREE.Vector3, initialDistance: number) {
     if (this.isSubdivided && this.lodDepth < LOD_MAX_DEPTH) {
       this.childChunks.forEach((child: WaterChunk) => {
-        child.update(cameraPosition);
+        child.update(targetPosition, initialDistance);
       });
     }
 
-    const distance = cameraPosition.distanceTo(this.worldPosition);
+    const distance = targetPosition.distanceTo(this.worldPosition) + initialDistance;
     const lodRange = LOD_RANGE0 / (2 << this.lodDepth);
   
     if (distance < lodRange - THRESHOLD && !this.isSubdivided) {
