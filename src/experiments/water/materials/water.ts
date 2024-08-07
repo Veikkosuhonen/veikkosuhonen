@@ -4,8 +4,8 @@ import * as THREE from 'three'
 const vertexShader = /* glsl */`
 #define PI 3.1415926535897932384626433832795
 #define _WaveA vec4(0.5, 0.5, 0.05, 21.0)
-#define _WaveB vec4(0.5, 0.4, 0.05, 16.1)
-#define _WaveC vec4(0.5, 0.3, 0.05, 12.2)
+#define _WaveB vec4(0.5, 0.4, 0.06, 16.1)
+#define _WaveC vec4(0.5, 0.3, 0.07, 12.2)
 #define _WaveD vec4(0.5, 0.2, 0.05, 10.3)
 #define _WaveE vec4(0.5, 0.1, 0.05, 6.4)
 #define _WaveF vec4(0.5, 0.0, 0.05, 4.5)
@@ -16,17 +16,22 @@ const vertexShader = /* glsl */`
 #define _WaveBend 0.1
 #define _WaveBendLength 0.1
 #define _WaveShape 0.4
+#define _WaveAmp 1.2
+#define _WaveScale 2.0
 uniform float u_time;
 
 varying vec3 vPosition;
 varying vec3 vNormal;
+varying vec2 vUv;
+varying float vPeak;
 
 vec3 GerstnerWave(
-    vec4 wave, vec3 p, inout vec3 tangent, inout vec3 binormal
+    vec4 wave, vec3 p, inout vec3 tangent, inout vec3 binormal, inout float peak
 ) {
+  wave.w /= _WaveScale;
   p.x += sin(p.z / wave.w / _WaveBendLength) * wave.w * _WaveBend;
 
-  float steepness = wave.z;
+  float steepness = wave.z * _WaveAmp;
   float wavelength = wave.w;
   float k = 2. * PI / wavelength;
   float c = sqrt(9.8 / k);
@@ -34,24 +39,27 @@ vec3 GerstnerWave(
   float f = k * (dot(d, p.xz) - c * u_time);
   float a = steepness / (k * _WaveShape);
 
-  //p.x += d.x * (a * cos(f));
-  //p.y = a * sin(f);
-  //p.z += d.y * (a * cos(f));
+  float sinf = sin(f);
+  float cosf = cos(f);
+  float ssinf = steepness * sinf;
+  float scosf = steepness * cosf;
+
+  peak += ssinf;
 
   tangent += vec3(
-    -d.x * d.x * (steepness * sin(f)),
-    d.x * (steepness * cos(f)),
-    -d.x * d.y * (steepness * sin(f))
+    -d.x * d.x * ssinf,
+    d.x * scosf,
+    -d.x * d.y * ssinf
   );
   binormal += vec3(
-    -d.x * d.y * (steepness * sin(f)),
-    d.y * (steepness * cos(f)),
-    -d.y * d.y * (steepness * sin(f))
+    -d.x * d.y * ssinf,
+    d.y * scosf,
+    -d.y * d.y * ssinf
   );
   return vec3(
-    d.x * (a * cos(f)),
-    a * sin(f),
-    d.y * (a * cos(f))
+    d.x * (a * cosf),
+    a * sinf,
+    d.y * (a * cosf)
   );
 }
 
@@ -61,18 +69,21 @@ void main() {
     vec3 tangent = vec3(1. ,0. ,0.);
     vec3 binormal = vec3(0., 0., 1.);
     vec3 positionOffset = vec3(0., 0., 0.);
-    positionOffset += GerstnerWave(_WaveA, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveB, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveC, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveD, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveE, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveF, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveG, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveH, positionWS, tangent, binormal);
-    positionOffset += GerstnerWave(_WaveI, positionWS, tangent, binormal);
+    float peak = 0.0;
+    positionOffset += GerstnerWave(_WaveA, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveB, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveC, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveD, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveE, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveF, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveG, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveH, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveI, positionWS, tangent, binormal, peak);
     positionWS += positionOffset;
     vPosition = positionWS;
     vNormal = normalize(cross(binormal, tangent));
+    vPeak = peak / 9.0;
+    vUv = uv;
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
 }
 `;
@@ -81,6 +92,7 @@ void main() {
 const fragmentShader = /* glsl */`
 // Uniforms
 uniform samplerCube u_skybox;
+uniform sampler2D u_foam;
 uniform float u_time;
 uniform float u_fresnelStrength;
 uniform float u_fresnelPower;
@@ -99,6 +111,8 @@ uniform vec3 u_deepWater;
 // Varyings
 varying vec3 vPosition;
 varying vec3 vNormal;
+varying vec2 vUv;
+varying float vPeak;
 
 void main() {
     vec3 viewDirection = normalize(cameraPosition - vPosition);
@@ -143,6 +157,10 @@ void main() {
     float down = max(0.0, pow(max(0.0, -refractDirection.y), u_underwaterFogPower) - underwaterLightAmount);
     vec3 waterColor = mix(u_shallowWater, u_deepWater, down);
 
+    // Foam
+    vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb;
+    waterColor += foamColor * smoothstep(0.005, 0.04, vPeak);
+
     vec3 color = fresnelColor + specularColor + waterColor;
 
     // color = pow(color, vec3(1.7));
@@ -155,6 +173,7 @@ export default new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
     u_skybox: { value: new THREE.CubeTextureLoader().setPath("/assets/").load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']) },
+    u_foam: { value: new THREE.TextureLoader().load("/assets/foam.jpg") },
     u_fresnelStrength: { value: 1.2 },
     u_fresnelPower: { value: 1.0 },
     u_fresnelBias: { value: 0.13 },

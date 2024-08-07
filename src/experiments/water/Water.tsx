@@ -9,7 +9,7 @@ const start = () => {
   const canvas = document.getElementById('water') as HTMLCanvasElement
 
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.5, 1000)
   camera.frustumCulled = true
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
@@ -53,7 +53,7 @@ const start = () => {
     requestAnimationFrame(animate)
 
     waterChunks.forEach(wc => wc.update(camera.position));
-    waterMaterial.uniforms.u_time.value = time / 1000.0;
+    waterMaterial.uniforms.u_time.value = time / 1500.0;
   
     composer.render()
     setFrameTime(time - prevFrameTime)
