@@ -1,4 +1,6 @@
-import Water from "~/experiments/water/Water";
+import { clientOnly } from "@solidjs/start"
+
+const Water = clientOnly(() => import("../../experiments/water/Water"))
 
 export default function() {
   return (
