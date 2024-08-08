@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import waterMaterial from "./materials/water"
 
 const LOD_RANGE0 = 900;
-const LOD_MAX_DEPTH = 4;
+const LOD_MAX_DEPTH = 5;
 
 const THRESHOLD = 0.1;
 

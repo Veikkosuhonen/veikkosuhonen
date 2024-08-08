@@ -48,7 +48,7 @@ const start = () => {
   const toneMappingPass = new EffectPass(camera, toneMappingEffect);
   composer.addPass(toneMappingPass);
 
-  const waterChunks = createWaterChunkArea(new THREE.Vector3(0, 0, 0), 10)
+  const waterChunks = createWaterChunkArea(new THREE.Vector3(0, 0, 0), 12)
   scene.add(...waterChunks);
 
 

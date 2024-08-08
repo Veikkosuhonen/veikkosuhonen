@@ -161,10 +161,14 @@ void main() {
 
     // Foam
     vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb;
-    waterColor += foamColor * smoothstep(0.002, 0.04, vPeak);
+    waterColor += foamColor * smoothstep(0.004, 0.05, vPeak);
 
     vec3 color = fresnelColor + specularColor + waterColor;
 
+    float dist = length(vPosition - cameraPosition);
+    float fogFactor = pow(2.0, -dist * 0.0004);
+    color = mix(color, vec3(1.0), 1.0 - fogFactor);
+  
     // color = pow(color, vec3(1.7));
 
     gl_FragColor = vec4(color, 1.0);
