@@ -1,7 +1,8 @@
-import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect } from "postprocessing"
+import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, ToneMappingEffect } from "postprocessing"
 import { createSignal, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
+import { Sky } from "three/examples/jsm/objects/Sky"
 import { createWaterChunkArea, WaterChunk } from "./WaterChunk"
 import waterMaterial from "./materials/water"
 
@@ -17,7 +18,7 @@ const start = () => {
     stencil: false,
     depth: true,
     logarithmicDepthBuffer: true,
-    precision: 'highp'
+    precision: 'highp',
   })
 
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -30,8 +31,8 @@ const start = () => {
     radius: 0.7,
     blendFunction: BlendFunction.ADD,
     mipmapBlur: true,
-    luminanceThreshold: 1.0,
-    luminanceSmoothing: 0.01,
+    luminanceThreshold: 4.0,
+    luminanceSmoothing: 0.1,
     intensity: 1.0
   });
 
@@ -39,8 +40,23 @@ const start = () => {
   const effectPass = new EffectPass(camera, effect);
   // composer.addPass(effectPass);
 
+  const toneMappingEffect = new ToneMappingEffect({
+    mode: THREE.ACESFilmicToneMapping,
+    
+  })
+
+  const toneMappingPass = new EffectPass(camera, toneMappingEffect);
+  composer.addPass(toneMappingPass);
+
   const waterChunks = createWaterChunkArea(new THREE.Vector3(0, 0, 0), 10)
-  scene.add(...waterChunks)
+  scene.add(...waterChunks);
+
+
+  const sun = new THREE.Vector3(0.5, 0.1, 0.5);
+
+  const sky = new Sky();
+  sky.scale.setScalar( 450000 );
+  scene.add(sky);
 
   camera.position.y = 10;
   camera.position.z = -10;
@@ -52,9 +68,12 @@ const start = () => {
   const animate: FrameRequestCallback = (time) => {
     requestAnimationFrame(animate)
 
-    const initialDistance = camera.position.distanceTo(controls.target);
-    waterChunks.forEach(wc => wc.update(controls.target, initialDistance));
+    const initialDistance = 0 // camera.position.distanceTo(controls.target);
+    waterChunks.forEach(wc => wc.update(camera.position, initialDistance));
+    // console.log(waterMaterial.uniforms)
     waterMaterial.uniforms.u_time.value = time / 1500.0;
+    waterMaterial.uniforms.u_sunDirection.value.copy(sun);
+    sky.material.uniforms.sunPosition.value.copy(sun);
   
     composer.render()
     setFrameTime(time - prevFrameTime)

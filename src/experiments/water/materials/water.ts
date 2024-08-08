@@ -90,6 +90,8 @@ void main() {
 
 // Fragment Shader
 const fragmentShader = /* glsl */`
+precision highp float;
+
 // Uniforms
 uniform samplerCube u_skybox;
 uniform sampler2D u_foam;
@@ -106,7 +108,7 @@ uniform float u_underwaterLightPower;
 uniform float u_underwaterFogPower;
 uniform vec3 u_shallowWater;
 uniform vec3 u_deepWater;
-
+uniform vec3 u_sunDirection;
 
 // Varyings
 varying vec3 vPosition;
@@ -117,7 +119,7 @@ varying float vPeak;
 void main() {
     vec3 viewDirection = normalize(cameraPosition - vPosition);
     vec3 normal = normalize(vNormal);
-    vec3 lightDirection = normalize(vec3(0.5, 0.1, 0.5));
+    vec3 lightDirection = normalize(u_sunDirection);
     vec3 halfwayDirection = normalize(lightDirection + viewDirection);
     vec3 reflectionDirection = reflect(-viewDirection, normal);
 
@@ -174,18 +176,19 @@ export default new THREE.ShaderMaterial({
     u_time: { value: 0.0 },
     u_skybox: { value: new THREE.CubeTextureLoader().setPath("/assets/").load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']) },
     u_foam: { value: new THREE.TextureLoader().load("/assets/foam.jpg") },
-    u_fresnelStrength: { value: 1.2 },
-    u_fresnelPower: { value: 1.0 },
+    u_fresnelStrength: { value: 0.9 },
+    u_fresnelPower: { value: 2.1 },
     u_fresnelBias: { value: 0.13 },
-    u_fresnelNormalStrength: { value: 1.0 },
-    u_specularStrength: { value: 10.0 },
-    u_specularPower: { value: 300.0 },
-    u_specularNormalStrength: { value: 1.0 },
+    u_fresnelNormalStrength: { value: 1.1 },
+    u_specularStrength: { value: 40.0 },
+    u_specularPower: { value: 100.0 },
+    u_specularNormalStrength: { value: 1.2 },
     u_underwaterLightStrength: { value: 1.0 },
     u_underwaterLightPower: { value: 2.0 },
     u_underwaterFogPower: { value: 0.3 },
     u_shallowWater: { value: new THREE.Color(0x10afaf) },
-    u_deepWater: { value: new THREE.Color(0x000a57) }
+    u_deepWater: { value: new THREE.Color(0x000a57) },
+    u_sunDirection: { value: new THREE.Vector3(0.5, 0.5, 0) }
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,
