@@ -3,8 +3,10 @@ import { createSignal, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
 import { Sky } from "three/examples/jsm/objects/Sky"
-import { createWaterChunkArea, WaterChunk } from "./WaterChunk"
+import { createLodChunkArea } from "./LodChunk"
 import waterMaterial from "./materials/water"
+import cliffMaterial from "./materials/cliff"
+import { createGeometry } from "./GeneratedGeometry"
 
 const start = () => {
   const canvas = document.getElementById('water') as HTMLCanvasElement
@@ -48,20 +50,27 @@ const start = () => {
   const toneMappingPass = new EffectPass(camera, toneMappingEffect);
   composer.addPass(toneMappingPass);
 
-  const waterChunks = createWaterChunkArea(new THREE.Vector3(0, 0, 0), 12)
+  const waterChunks = createLodChunkArea(new THREE.Vector3(0, 0, 0), 12, waterMaterial)
   scene.add(...waterChunks);
 
+  const cliffGeometry = createGeometry(renderer);
+  const cliff = new THREE.Mesh(cliffGeometry, cliffMaterial);
+  cliff.scale.setScalar(3.0);
+  const cliffGroup = new THREE.Group();
+  cliffGroup.position.set(0.0, 4.0, 0.0);
+  cliffGroup.add(cliff);
+  scene.add(cliffGroup);
 
-  const sun = new THREE.Vector3(0.5, 0.1, 0.5);
+  const sun = new THREE.Vector3(0.5, 0.5, 0.5);
 
   const sky = new Sky();
   sky.scale.setScalar( 450000 );
   scene.add(sky);
 
-  camera.position.y = 10;
-  camera.position.z = -10;
+  camera.position.y = 20;
+  camera.position.z = -20;
   const controls = new MapControls(camera, canvas);
-  controls.target.set(0, 0, 0);
+  controls.target.set(0, 1.0, 0);
   controls.update();
 
   let prevFrameTime = 0;
@@ -73,6 +82,7 @@ const start = () => {
     // console.log(waterMaterial.uniforms)
     waterMaterial.uniforms.u_time.value = time / 1500.0;
     waterMaterial.uniforms.u_sunDirection.value.copy(sun);
+    cliffMaterial.uniforms.u_sunDirection.value.copy(sun);
     sky.material.uniforms.sunPosition.value.copy(sun);
   
     composer.render()
