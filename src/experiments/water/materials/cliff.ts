@@ -3,18 +3,20 @@ import * as THREE from 'three'
 // Vertex Shader
 const vertexShader = /* glsl */`
 
+uniform mat4 u_shadowCameraViewMatrix;
+uniform mat4 u_shadowCameraProjectionMatrix;
+
+varying vec4 vShadowCoord;
 varying vec3 vPosition;
 varying vec3 vNormal;
-varying vec2 vUv;
 
 
 void main() {
     vec3 positionWS = (modelMatrix * vec4(position, 1.0)).xyz;
-    vec2 worldUV = positionWS.xz;
     vPosition = positionWS;
     vNormal = normal;
-    vUv = worldUV;
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
+    vShadowCoord = u_shadowCameraProjectionMatrix * u_shadowCameraViewMatrix * vec4(positionWS, 1.0);
 }
 `;
 
@@ -32,19 +34,40 @@ uniform float u_specularPower;
 uniform float u_specularNormalStrength;
 uniform vec3 u_sunDirection;
 
+uniform vec3 u_shadowCameraPosition;
+uniform sampler2D u_shadowMap;
+
 // Varyings
+varying vec4 vShadowCoord;
 varying vec3 vPosition;
 varying vec3 vNormal;
-varying vec2 vUv;
+
+#include <packing>
 
 void main() {
-    vec3 viewDirection = normalize(cameraPosition - vPosition);
     vec3 normal = normalize(vNormal);
+  
+    vec3 shadowCoord = vShadowCoord.xyz / vShadowCoord.w * 0.5 + 0.5;
 
-    vec2 rippleNormal1 = texture2D(u_rippleNormal, vUv / 7.0 + vec2(0.9, 0.1) * u_time / 12.0).xy * 2.0 - 1.0;
-    vec2 rippleNormal2 = texture2D(u_rippleNormal, vUv / 5.0 - vec2(0.8, 0.2) * u_time / 14.0).xy * 2.0 - 1.0;
-    vec2 rippleNormal3 = texture2D(u_rippleNormal, vUv / 3.0 + vec2(0.1,-0.9) * u_time / 16.0).xy * 2.0 - 1.0;
-    vec2 rippleNormal = rippleNormal1 + rippleNormal2 * 0.8 + rippleNormal3 * 0.6;
+    float depth_shadowCoord = shadowCoord.z;
+
+    vec2 depthMapUv = shadowCoord.xy;
+    float depth_depthMap = unpackRGBAToDepth(texture2D(u_shadowMap, depthMapUv));
+
+    float cosTheta = dot(normalize(u_sunDirection), normal);
+    float bias = 0.0005 * tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    bias = clamp(bias, 0.0, 0.01);
+    
+    float shadowFactor = step(depth_shadowCoord - bias, depth_depthMap);
+  
+
+    vec3 viewDirection = normalize(cameraPosition - vPosition);
+    
+
+    vec2 rippleNormal1 = abs(normal.z) * (texture2D(u_rippleNormal, vPosition.xy / 5.0 + vec2(0.9, 0.1)).xy * 2.0 - 1.0);
+    vec2 rippleNormal2 = abs(normal.y) * (texture2D(u_rippleNormal, vPosition.xz / 5.0 - vec2(0.8, 0.2)).xy * 2.0 - 1.0);
+    vec2 rippleNormal3 = abs(normal.x) * (texture2D(u_rippleNormal, vPosition.yz / 5.0 + vec2(0.1,-0.9)).xy * 2.0 - 1.0);
+    vec2 rippleNormal = rippleNormal1 + rippleNormal2 + rippleNormal3;
   
     normal.xz += rippleNormal * u_rippleStrength;
     normal = normalize(normal);
@@ -58,8 +81,8 @@ void main() {
     vec3 grass = vec3(0.05, 0.2, 0.1);
 
     vec3 diffuse = mix(rock, grass, clamp(0.0, 1.0, smoothstep(0.5, 0.8, normal.y) - smoothstep(1.5, 1.0, vPosition.y)));
-    float diffuseSunLight = max(0.0, dot(normal, lightDirection)) * 0.2;
-    float diffuseSkyLight = max(0.0, normal.y) * 0.1;
+    float diffuseSunLight = max(0.0, dot(normal, lightDirection)) * 0.2 * shadowFactor;
+    float diffuseSkyLight = max(0.0, normal.y) * 0.2 * (0.5 + 0.5 * shadowFactor);
     float ambientLight = 0.1;
     diffuse *= diffuseSunLight + diffuseSkyLight + ambientLight;
 
@@ -68,6 +91,10 @@ void main() {
     diffuse *= 1.0 + skybox * 0.5;
 
     vec3 color = diffuse;
+
+    float dist = length(vPosition - cameraPosition);
+    float fogFactor = pow(2.0, -dist * 0.0004);
+    color = mix(color, vec3(1.0), 1.0 - fogFactor);
 
     gl_FragColor = vec4(color, 1.0);
 }
@@ -79,7 +106,11 @@ const rippleNormal = new THREE.TextureLoader().load("/assets/ripple_normal.jpg")
 rippleNormal.wrapS = THREE.MirroredRepeatWrapping;
 rippleNormal.wrapT = THREE.MirroredRepeatWrapping;
 
-export default new THREE.ShaderMaterial({
+export default ({
+  shadowMap
+}: {
+  shadowMap: THREE.Texture
+}) => new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
     u_skybox: { value: skyBox },
@@ -89,6 +120,10 @@ export default new THREE.ShaderMaterial({
     u_specularPower: { value: 3.0 },
     u_specularNormalStrength: { value: 1.0 },
     u_sunDirection: { value: new THREE.Vector3(0.5, 0.5, 0) },
+    u_shadowCameraViewMatrix: { value: new THREE.Matrix4() },
+    u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
+    u_shadowCameraPosition: { value: new THREE.Vector3() },
+    u_shadowMap: { value: shadowMap },
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,

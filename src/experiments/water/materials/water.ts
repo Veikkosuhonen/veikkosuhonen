@@ -20,6 +20,10 @@ const vertexShader = /* glsl */`
 #define _WaveScale 2.0
 uniform float u_time;
 
+uniform mat4 u_shadowCameraViewMatrix;
+uniform mat4 u_shadowCameraProjectionMatrix;
+
+varying vec4 vShadowCoord;
 varying vec3 vPosition;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -86,6 +90,7 @@ void main() {
     vPeak = peak / 9.0;
     vUv = worldUV;
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
+    vShadowCoord = u_shadowCameraProjectionMatrix * u_shadowCameraViewMatrix * vec4(positionWS, 1.0);
 }
 `;
 
@@ -115,15 +120,35 @@ uniform vec3 u_shallowWater;
 uniform vec3 u_deepWater;
 uniform vec3 u_sunDirection;
 
+uniform vec3 u_shadowCameraPosition;
+uniform sampler2D u_shadowMap;
+
 // Varyings
+varying vec4 vShadowCoord;
 varying vec3 vPosition;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying float vPeak;
 
+#include <packing>
+
 void main() {
-    vec3 viewDirection = normalize(cameraPosition - vPosition);
     vec3 normal = normalize(vNormal);
+
+    vec3 shadowCoord = vShadowCoord.xyz / vShadowCoord.w * 0.5 + 0.5;
+
+    float depth_shadowCoord = shadowCoord.z;
+
+    vec2 depthMapUv = shadowCoord.xy;
+    float depth_depthMap = unpackRGBAToDepth(texture2D(u_shadowMap, depthMapUv));
+
+    float ndotl = max(0.0, dot(normalize(u_sunDirection), normal));
+    float bias = 0.0005 * tan(acos(ndotl)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    bias = clamp(bias, 0.0, 0.01);
+    
+    float shadowFactor = step(depth_shadowCoord - bias, depth_depthMap);
+
+    vec3 viewDirection = normalize(cameraPosition - vPosition);
 
     vec2 rippleNormal1 = texture2D(u_rippleNormal, vUv / 7.0 - vec2(0.5, 0.5) * u_time / 10.0).xy * 2.0 - 1.0;
     vec2 rippleNormal2 = texture2D(u_rippleNormal, vUv / 5.0 - vec2(0.4, 0.1) * u_time / 12.0).xy * 2.0 - 1.0;
@@ -151,6 +176,9 @@ void main() {
     vec3 skybox = textureCube(u_skybox, reflectionDirection).rgb;
     vec3 fresnelColor = skybox * fresnel;
 
+    // If in shadow, darken specular if it is towards light
+    fresnelColor *= 1.0 - (1.0 - shadowFactor) * ndotl;
+
     // Peak effect
     float peak = max(0.0, vPeak);
     float foam = smoothstep(0.004, 0.05, peak) * u_foamAmount;
@@ -159,12 +187,11 @@ void main() {
     float specularPower = u_specularPower * (1.0 - foam * 0.1);
 
     // Specular
-    float ndotl = max(dot(normal, lightDirection), 0.0);
     vec3 specNormal = normal;
     specNormal.xz *= u_specularNormalStrength;
     specNormal = normalize(specNormal);
     float spec = pow(max(dot(halfwayDirection, specNormal), 0.0), specularPower) * ndotl * u_specularStrength;
-    vec3 specularColor = vec3(1.0) * spec;
+    vec3 specularColor = vec3(1.0) * spec * shadowFactor;
 
     // Fresnel for specular
     base = 1.0 - dot(viewDirection, halfwayDirection);
@@ -178,7 +205,7 @@ void main() {
 
     // Refraction
     vec3 refractDirection = refract(-viewDirection, normal, 1.0 / 1.333);
-    float underwaterLightContrib = pow(max(0.0, dot(lightDirection, refractDirection)), u_underwaterLightPower);
+    float underwaterLightContrib = pow(max(0.0, dot(lightDirection, refractDirection)), u_underwaterLightPower) * shadowFactor;
     float underwaterLightAmount = (underwaterLightContrib) * u_underwaterLightStrength;
 
     float down = max(0.0, pow(max(0.0, -refractDirection.y), u_underwaterFogPower) - underwaterLightAmount);
@@ -208,7 +235,11 @@ const rippleNormal = new THREE.TextureLoader().load("/assets/ripple_normal.jpg")
 rippleNormal.wrapS = THREE.MirroredRepeatWrapping;
 rippleNormal.wrapT = THREE.MirroredRepeatWrapping;
 
-export default new THREE.ShaderMaterial({
+export default ({
+  shadowMap
+}: {
+  shadowMap: THREE.Texture
+}) => new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
     u_skybox: { value: skyBox },
@@ -230,6 +261,10 @@ export default new THREE.ShaderMaterial({
     u_shallowWater: { value: new THREE.Color(0x10afaf) },
     u_deepWater: { value: new THREE.Color(0x000a57) },
     u_sunDirection: { value: new THREE.Vector3(0.5, 0.5, 0) },
+    u_shadowCameraViewMatrix: { value: new THREE.Matrix4() },
+    u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
+    u_shadowCameraPosition: { value: new THREE.Vector3() },
+    u_shadowMap: { value: shadowMap },
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,

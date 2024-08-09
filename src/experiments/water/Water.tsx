@@ -3,10 +3,19 @@ import { createSignal, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
 import { Sky } from "three/examples/jsm/objects/Sky"
+import { ShadowMapViewer } from "three/examples/jsm/utils/ShadowMapViewer"
 import { createLodChunkArea } from "./LodChunk"
-import waterMaterial from "./materials/water"
-import cliffMaterial from "./materials/cliff"
+import getWaterMaterial from "./materials/water"
+import getCliffMaterial from "./materials/cliff"
 import { createGeometry } from "./GeneratedGeometry"
+import { shadowMaterial } from "./materials/shadow"
+
+let waterMaterial: THREE.ShaderMaterial|null = null;
+
+/**
+ * Good links:
+ * https://mofu-dev.com/en/blog/threejs-shadow-map/
+ */
 
 const start = () => {
   const canvas = document.getElementById('water') as HTMLCanvasElement
@@ -22,8 +31,6 @@ const start = () => {
     logarithmicDepthBuffer: true,
     precision: 'highp',
   })
-
-  renderer.shadowMap.enabled = true;
 
   renderer.setSize(window.innerWidth, window.innerHeight)
   const composer = new EffectComposer(renderer, {
@@ -52,20 +59,38 @@ const start = () => {
   const toneMappingPass = new EffectPass(camera, toneMappingEffect);
   composer.addPass(toneMappingPass);
 
+  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+  sun.position.set(20, 20, 20);
+  sun.shadow.camera = new THREE.OrthographicCamera(-40, 40, 40, -40, 0.5, 1000);
+  sun.shadow.camera.position.copy(sun.position);
+  sun.shadow.camera.lookAt(scene.position);
+  sun.shadow.camera.layers.enable(1);
+  scene.add(sun.shadow.camera);
+  // const cameraHelper = new THREE.CameraHelper(sun.shadow.camera);
+  // scene.add(cameraHelper);
+
+  sun.shadow.mapSize.x = 2048;
+  sun.shadow.mapSize.y = 2048;
+  sun.shadow.map = new THREE.WebGLRenderTarget(sun.shadow.mapSize.x, sun.shadow.mapSize.y, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    type: THREE.FloatType
+  });
+
+  waterMaterial = getWaterMaterial({ shadowMap: sun.shadow.map.texture });
+  const cliffMaterial = getCliffMaterial({ shadowMap: sun.shadow.map.texture });
+
   const waterChunks = createLodChunkArea(new THREE.Vector3(0, 0, 0), 12, waterMaterial)
   scene.add(...waterChunks);
 
   const cliffGeometry = createGeometry(renderer);
   const cliff = new THREE.Mesh(cliffGeometry, cliffMaterial);
-  cliff.receiveShadow = true;
-  cliff.castShadow = true;
   cliff.scale.setScalar(12.0);
   const cliffGroup = new THREE.Group();
-  cliffGroup.position.set(0.0, 0.0, 0.0);
+  cliffGroup.layers.enable(1);
   cliffGroup.add(cliff);
   scene.add(cliffGroup);
-
-  const sun = new THREE.Vector3(0.5, 0.5, 0.5);
 
   const sky = new Sky();
   sky.scale.setScalar( 450000 );
@@ -79,15 +104,32 @@ const start = () => {
 
   let prevFrameTime = 0;
   const animate: FrameRequestCallback = (time) => {
-    requestAnimationFrame(animate)
+    requestAnimationFrame(animate);
+
+    // Render cliff shadow
+    cliff.material = shadowMaterial;
+    renderer.setRenderTarget(sun.shadow.map);
+    renderer.render(scene, sun.shadow.camera);
+    renderer.setRenderTarget(null);
+    cliff.material = cliffMaterial;
+
+    // const depthViewer = new ShadowMapViewer(sun);
+    // depthViewer.size.set(1024, 1024);
+    // depthViewer.render( renderer );
 
     const initialDistance = 0 // camera.position.distanceTo(controls.target);
     waterChunks.forEach(wc => wc.update(camera.position, initialDistance));
     // console.log(waterMaterial.uniforms)
-    waterMaterial.uniforms.u_time.value = time / 1500.0;
-    waterMaterial.uniforms.u_sunDirection.value.copy(sun);
-    cliffMaterial.uniforms.u_sunDirection.value.copy(sun);
-    sky.material.uniforms.sunPosition.value.copy(sun);
+    waterMaterial!.uniforms.u_time.value = time / 1500.0;
+    waterMaterial!.uniforms.u_sunDirection.value.copy(sun.position);
+    waterMaterial!.uniforms.u_shadowCameraPosition.value.copy(sun.shadow.camera.position);
+    waterMaterial!.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
+    waterMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
+    cliffMaterial.uniforms.u_sunDirection.value.copy(sun.position);
+    cliffMaterial.uniforms.u_shadowCameraPosition.value.copy(sun.shadow.camera.position);
+    cliffMaterial.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
+    cliffMaterial.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
+    sky.material.uniforms.sunPosition.value.copy(sun.position);
   
     composer.render()
     setFrameTime(time - prevFrameTime)
@@ -121,7 +163,7 @@ export default function Water() {
         <p>{frameTime().toFixed(1)} ms</p>
         <p>Drag to pan, scroll to zoom</p>
         <button class="mt-4 p-1 border border-amber-500 rounded-md" onClick={() => {
-          waterMaterial.wireframe = !waterMaterial.wireframe
+          waterMaterial!.wireframe = !waterMaterial!.wireframe
         }}>Toggle wireframe</button>
       </div>
     </div>
