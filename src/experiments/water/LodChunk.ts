@@ -39,6 +39,8 @@ export class LodChunk extends THREE.Group {
     super();
     this.position.copy(position);
     this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.receiveShadow = true;
+    this.mesh.castShadow = false;
     this.mesh.rotation.x = -Math.PI / 2;
     this.scaleFactor = 1 / (1 << lodDepth);
     this.mesh.scale.set(this.scaleFactor, this.scaleFactor, 1);

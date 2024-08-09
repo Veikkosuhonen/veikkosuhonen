@@ -23,6 +23,8 @@ const start = () => {
     precision: 'highp',
   })
 
+  renderer.shadowMap.enabled = true;
+
   renderer.setSize(window.innerWidth, window.innerHeight)
   const composer = new EffectComposer(renderer, {
     frameBufferType: THREE.HalfFloatType
@@ -55,9 +57,11 @@ const start = () => {
 
   const cliffGeometry = createGeometry(renderer);
   const cliff = new THREE.Mesh(cliffGeometry, cliffMaterial);
-  cliff.scale.setScalar(3.0);
+  cliff.receiveShadow = true;
+  cliff.castShadow = true;
+  cliff.scale.setScalar(12.0);
   const cliffGroup = new THREE.Group();
-  cliffGroup.position.set(0.0, 4.0, 0.0);
+  cliffGroup.position.set(0.0, 0.0, 0.0);
   cliffGroup.add(cliff);
   scene.add(cliffGroup);
 

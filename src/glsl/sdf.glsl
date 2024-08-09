@@ -1,6 +1,22 @@
-#include "lygia/generative/pnoise.glsl"
+#include "lygia/generative/fbm.glsl"
 
 float dist(vec3 position) {
   float distFromCenter = length(position.xz);
-  return position.y + distFromCenter - 0.5 + pnoise(position * 2.0, vec3(10.0, 10.0, 10.0)) * 0.5;
+
+  vec2 uv = position.xz;
+
+  uv.s += 0.5 * fbm(0.2 * uv);
+  uv.t += 0.5 * fbm(0.2 * uv.ts);
+
+  float height = fbm(0.4 * uv);
+  height -= pow(max(abs(uv.x), abs(uv.y)) / 2.0, 16.0);
+
+  float y = position.y - 1.0;
+  y = 0.7 * y * y + y * y * y;
+
+  float topSurface = sin(distFromCenter * 0.1);
+  topSurface += 0.3 * fbm(0.2 * uv + vec2(123.0));
+  y *= 1.0 + 10000.0 * smoothstep(1.0 - topSurface, 1.1 - topSurface, position.y);
+
+  return y - height;
 }
