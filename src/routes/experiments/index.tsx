@@ -28,10 +28,10 @@ const experiments = [
     text: "Visit Alpha Centauri AKA Trisolaris and see the three-body problem in action."
   },
   {
-    title: "Water",
+    title: "Island",
     path: "/experiments/water",
-    imageUrl: "https://live.staticflickr.com/65535/53902317358_e47eaadf6a_h.jpg",
-    text: "Wireframe ocean"
+    imageUrl: "https://live.staticflickr.com/65535/53914487061_c13c24abdf_h.jpg",
+    text: "3D procedurally generated ocean & island"
   },
 ]
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {

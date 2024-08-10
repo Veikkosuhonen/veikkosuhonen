@@ -263,7 +263,7 @@ void main() {
     vec3 waterColor = mix(shallowWaterColor, u_deepWater, down);
 
     // Foam
-    vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb;
+    vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb * (shadowFactor * 0.5 + 0.5);
     waterColor += foamColor * foam;
 
     vec3 color = fresnelColor + waterColor + specularColor;

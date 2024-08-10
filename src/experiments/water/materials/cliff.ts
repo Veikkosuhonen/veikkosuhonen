@@ -81,9 +81,9 @@ void main() {
     vec3 grass = vec3(0.05, 0.2, 0.1);
 
     vec3 diffuse = mix(rock, grass, clamp(0.0, 1.0, smoothstep(0.5, 0.8, normal.y) - smoothstep(1.5, 1.0, vPosition.y)));
-    float diffuseSunLight = max(0.0, dot(normal, lightDirection)) * 0.2 * shadowFactor;
-    float diffuseSkyLight = max(0.0, normal.y) * 0.2 * (0.5 + 0.5 * shadowFactor);
-    float ambientLight = 0.1;
+    float diffuseSunLight = max(0.0, dot(normal, lightDirection)) * 0.3 * shadowFactor;
+    float diffuseSkyLight = max(0.0, normal.y) * 0.3 * (0.5 + 0.5 * shadowFactor);
+    float ambientLight = 0.12;
     diffuse *= diffuseSunLight + diffuseSkyLight + ambientLight;
 
     // Sample skybox
