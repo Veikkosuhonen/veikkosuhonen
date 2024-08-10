@@ -22,24 +22,38 @@ uniform float u_time;
 
 uniform mat4 u_shadowCameraViewMatrix;
 uniform mat4 u_shadowCameraProjectionMatrix;
+uniform sampler2D u_distanceField;
 
 varying vec4 vShadowCoord;
+varying float vDistanceField;
 varying vec3 vPosition;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying float vPeak;
 
 vec3 GerstnerWave(
-    vec4 wave, vec3 p, inout vec3 tangent, inout vec3 binormal, inout float peak
+    vec4 wave, vec3 p, inout vec3 tangent, inout vec3 binormal, inout float peak, in vec2 islandDirection
 ) {
   wave.w /= _WaveScale;
   p.x += sin(p.z / wave.w / _WaveBendLength) * wave.w * _WaveBend;
 
-  float steepness = wave.z * _WaveAmp;
+  // Rotate wave towards center when near island
+  float distanceToIsland = length(p.xz);
+  float waveRotation = smoothstep(20.0, 0.0, distanceToIsland) * smoothstep(10.0, 1.0, vDistanceField);
+  p.xz = mix(p.xz, islandDirection, waveRotation);
+
+  vec2 d = normalize(wave.xy);
+
+  // Dot wave dir with island direction.
+  float waveAmp = _WaveAmp * (1.0 + dot(-d, islandDirection) * smoothstep(7.0, 2.0, vDistanceField));
+  waveAmp *= smoothstep(0.0, 5.0, length(p.xz));
+  waveAmp = min(waveAmp, 1.5);
+
+  float steepness = wave.z * waveAmp;
   float wavelength = wave.w;
   float k = 2. * PI / wavelength;
   float c = sqrt(9.8 / k);
-  vec2 d = normalize(wave.xy);
+  
   float f = k * (dot(d, p.xz) - c * u_time);
   float a = steepness / (k * _WaveShape);
 
@@ -71,25 +85,45 @@ void main() {
     vec3 positionWS = (modelMatrix * vec4(position, 1.0)).xyz;
     vec2 worldUV = positionWS.xz;
 
+    vec2 distanceFieldCoord = worldUV / 20.0 / 1.2 + vec2(0.5, -0.5);
+    distanceFieldCoord.y = -distanceFieldCoord.y;
+
+    vDistanceField = texture2D(u_distanceField, distanceFieldCoord).r;
+    float overBoundsX = step(0.95, distanceFieldCoord.x) * (distanceFieldCoord.x - 0.95);
+    float overBoundsY = step(0.95, distanceFieldCoord.y) * (distanceFieldCoord.y - 0.95);
+    float underBoundsX = step(distanceFieldCoord.x, 0.05) * -distanceFieldCoord.x;
+    float underBoundsY = step(distanceFieldCoord.y, 0.05) * -distanceFieldCoord.y;
+    float outofBoundsAttenuation = max(overBoundsX, max(overBoundsY, max(underBoundsX, underBoundsY)));
+    vDistanceField += 20.0 * outofBoundsAttenuation;
+
+    vec2 islandDirection = normalize(worldUV);
+
     vec3 tangent = vec3(1. ,0. ,0.);
     vec3 binormal = vec3(0., 0., 1.);
     vec3 positionOffset = vec3(0., 0., 0.);
     float peak = 0.0;
-    positionOffset += GerstnerWave(_WaveA, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveB, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveC, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveD, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveE, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveF, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveG, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveH, positionWS, tangent, binormal, peak);
-    positionOffset += GerstnerWave(_WaveI, positionWS, tangent, binormal, peak);
+    positionOffset += GerstnerWave(_WaveA, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveB, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveC, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveD, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveE, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveF, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveG, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveH, positionWS, tangent, binormal, peak, islandDirection);
+    positionOffset += GerstnerWave(_WaveI, positionWS, tangent, binormal, peak, islandDirection);
     positionWS += positionOffset;
+
+
     vPosition = positionWS;
+
     vNormal = normalize(cross(binormal, tangent));
+
     vPeak = peak / 9.0;
+
     vUv = worldUV;
+
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
+
     vShadowCoord = u_shadowCameraProjectionMatrix * u_shadowCameraViewMatrix * vec4(positionWS, 1.0);
 }
 `;
@@ -122,9 +156,11 @@ uniform vec3 u_sunDirection;
 
 uniform vec3 u_shadowCameraPosition;
 uniform sampler2D u_shadowMap;
+uniform sampler2D u_distanceField;
 
 // Varyings
 varying vec4 vShadowCoord;
+varying float vDistanceField;
 varying vec3 vPosition;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -147,6 +183,16 @@ void main() {
     bias = clamp(bias, 0.0, 0.01);
     
     float shadowFactor = step(depth_shadowCoord - bias, depth_depthMap);
+
+    bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );
+    bool inFrustum = all( inFrustumVec );
+
+    bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );
+    bool frustumTest = all( frustumTestVec );
+
+    if(frustumTest == false){
+        shadowFactor = 1.0;
+    }
 
     vec3 viewDirection = normalize(cameraPosition - vPosition);
 
@@ -182,6 +228,8 @@ void main() {
     // Peak effect
     float peak = max(0.0, vPeak);
     float foam = smoothstep(0.004, 0.05, peak) * u_foamAmount;
+    foam *= (1.0 + smoothstep(1.0, 0.0, vDistanceField));
+    foam += pow(smoothstep(0.5, 0.1, vDistanceField), 8.0) * 0.3;
 
     // Foam decrease specular power
     float specularPower = u_specularPower * (1.0 - foam * 0.1);
@@ -209,6 +257,7 @@ void main() {
     float underwaterLightAmount = (underwaterLightContrib) * u_underwaterLightStrength;
 
     float down = max(0.0, pow(max(0.0, -refractDirection.y), u_underwaterFogPower) - underwaterLightAmount);
+    down = clamp(down - smoothstep(0.2, -3.0, vDistanceField), 0.0, 1.0);
     vec3 waterColor = mix(shallowWaterColor, u_deepWater, down);
 
     // Foam
@@ -220,7 +269,7 @@ void main() {
     float dist = length(vPosition - cameraPosition);
     float fogFactor = pow(2.0, -dist * 0.0004);
     color = mix(color, vec3(1.0), 1.0 - fogFactor);
-  
+
     gl_FragColor = vec4(color, 1.0);
 }
 `;
@@ -257,7 +306,7 @@ export default ({
     u_underwaterLightPower: { value: 2.6 },
     u_underwaterFogPower: { value: 0.2 },
     u_peakBrightening: { value: 1.5 },
-    u_foamAmount: { value: 0.0  },
+    u_foamAmount: { value: 0.2  },
     u_shallowWater: { value: new THREE.Color(0x10afaf) },
     u_deepWater: { value: new THREE.Color(0x000a57) },
     u_sunDirection: { value: new THREE.Vector3(0.5, 0.5, 0) },
@@ -265,6 +314,9 @@ export default ({
     u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
     u_shadowCameraPosition: { value: new THREE.Vector3() },
     u_shadowMap: { value: shadowMap },
+    u_distanceField: { value: null },
+    u_distanceCameraViewMatrix: { value: new THREE.Matrix4() },
+    u_distanceCameraProjectionMatrix: { value: new THREE.Matrix4() },
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,

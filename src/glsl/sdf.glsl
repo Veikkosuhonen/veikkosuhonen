@@ -1,6 +1,9 @@
 #include "lygia/generative/fbm.glsl"
 
 float dist(vec3 position) {
+  // Scale down
+  position *= 2.0;
+
   float distFromCenter = length(position.xz);
 
   vec2 uv = position.xz;
