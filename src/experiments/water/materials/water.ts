@@ -16,7 +16,7 @@ const vertexShader = /* glsl */`
 #define _WaveBend 0.1
 #define _WaveBendLength 0.1
 #define _WaveShape 0.4
-#define _WaveAmp 1.1
+#define _WaveAmp 0.9
 #define _WaveScale 2.0
 uniform float u_time;
 
@@ -37,17 +37,19 @@ vec3 GerstnerWave(
   wave.w /= _WaveScale;
   p.x += sin(p.z / wave.w / _WaveBendLength) * wave.w * _WaveBend;
 
+  float dotI = dot(-wave.xy, islandDirection);
+
   // Rotate wave towards center when near island
   float distanceToIsland = length(p.xz);
-  float waveRotation = smoothstep(20.0, 0.0, distanceToIsland) * smoothstep(10.0, 1.0, vDistanceField);
-  p.xz = mix(p.xz, islandDirection, waveRotation);
+  float waveRotation = pow(smoothstep(20.0, 0.0, distanceToIsland), 2.0) * pow(smoothstep(10.0, 2.0, vDistanceField), 2.0);
+  p.xz = mix(p.xz, islandDirection, sign(dotI) * waveRotation);
 
   vec2 d = normalize(wave.xy);
 
   // Dot wave dir with island direction.
-  float waveAmp = _WaveAmp * (1.0 + dot(-d, islandDirection) * smoothstep(7.0, 2.0, vDistanceField));
+  float waveAmp = _WaveAmp * (1.0 + dotI * smoothstep(9.0, 1.0, vDistanceField));
   waveAmp *= smoothstep(0.0, 5.0, length(p.xz));
-  waveAmp = min(waveAmp, 1.5);
+  waveAmp = min(waveAmp, 1.4);
 
   float steepness = wave.z * waveAmp;
   float wavelength = wave.w;
@@ -229,7 +231,7 @@ void main() {
     float peak = max(0.0, vPeak);
     float foam = smoothstep(0.004, 0.05, peak) * u_foamAmount;
     foam *= (1.0 + smoothstep(1.0, 0.0, vDistanceField));
-    foam += pow(smoothstep(0.5, 0.1, vDistanceField), 8.0) * 0.3;
+    foam += pow(smoothstep(0.7, 0.1, vDistanceField), 8.0) * 0.3;
 
     // Foam decrease specular power
     float specularPower = u_specularPower * (1.0 - foam * 0.1);
@@ -257,7 +259,7 @@ void main() {
     float underwaterLightAmount = (underwaterLightContrib) * u_underwaterLightStrength;
 
     float down = max(0.0, pow(max(0.0, -refractDirection.y), u_underwaterFogPower) - underwaterLightAmount);
-    down = clamp(down - smoothstep(0.2, -3.0, vDistanceField), 0.0, 1.0);
+    down = clamp(down - pow(smoothstep(1.5, 0.2, vDistanceField), 2.0) * 0.05, 0.0, 1.0);
     vec3 waterColor = mix(shallowWaterColor, u_deepWater, down);
 
     // Foam
