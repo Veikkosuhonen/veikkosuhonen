@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { skyBox } from '../skybox';
 
 // Vertex Shader
 const vertexShader = /* glsl */`
@@ -16,7 +17,7 @@ const vertexShader = /* glsl */`
 #define _WaveBend 0.1
 #define _WaveBendLength 0.1
 #define _WaveShape 0.4
-#define _WaveAmp 0.9
+#define _WaveAmp 0.5
 #define _WaveScale 2.0
 uniform float u_time;
 
@@ -221,7 +222,9 @@ void main() {
     fresnel *= u_fresnelStrength;
 
     // Sample skybox
-    vec3 skybox = textureCube(u_skybox, reflectionDirection).rgb;
+    vec3 skyboxDirection = reflectionDirection;
+    skyboxDirection.x = -skyboxDirection.x;
+    vec3 skybox = textureCube(u_skybox, skyboxDirection).rgb;
     vec3 fresnelColor = skybox * fresnel;
 
     // If in shadow, darken specular if it is towards light
@@ -263,20 +266,18 @@ void main() {
     vec3 waterColor = mix(shallowWaterColor, u_deepWater, down);
 
     // Foam
-    vec3 foamColor = texture2D(u_foam, vUv / 2.0).rgb * (shadowFactor * 0.5 + 0.5);
+    vec3 foamColor = texture2D(u_foam, vUv / 4.0).rgb * (shadowFactor * 0.5 + 0.5);
     waterColor += foamColor * foam;
 
     vec3 color = fresnelColor + waterColor + specularColor;
 
     float dist = length(vPosition - cameraPosition);
     float fogFactor = pow(2.0, -dist * 0.0004);
-    color = mix(color, vec3(1.0), 1.0 - fogFactor);
+    // color = mix(color, vec3(1.0), 1.0 - fogFactor);
 
     gl_FragColor = vec4(color, 1.0);
 }
 `;
-
-const skyBox = new THREE.CubeTextureLoader().setPath("/assets/").load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
 
 const foam = new THREE.TextureLoader().load("/assets/foam.jpg");
 foam.wrapS = THREE.MirroredRepeatWrapping;
@@ -297,8 +298,8 @@ export default ({
     u_foam: { value: foam },
     u_rippleNormal: { value: rippleNormal },
     u_rippleStrength: { value: 0.03 },
-    u_fresnelStrength: { value: 3.0 },
-    u_fresnelPower: { value: 4.0 },
+    u_fresnelStrength: { value: 2.0 },
+    u_fresnelPower: { value: 3.0 },
     u_fresnelBias: { value: 0.02 },
     u_fresnelNormalStrength: { value: 1.5 },
     u_specularStrength: { value: 40.0 },

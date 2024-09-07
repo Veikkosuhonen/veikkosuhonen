@@ -11,6 +11,7 @@ import getCliffMaterial from "./materials/cliff"
 import { createGeometry } from "./GeneratedGeometry"
 import { shadowMaterial } from "./materials/shadow"
 import { createCliff } from "./createCliff"
+import { skyBox } from "./skybox"
 
 let waterMaterial: THREE.ShaderMaterial|null = null;
 let cliffMaterial: THREE.ShaderMaterial|null = null;
@@ -27,7 +28,7 @@ const start = () => {
   const shadowMapScene = new THREE.Scene()
   scene.add(shadowMapScene);
 
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.5, 1200)
+  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1100)
   camera.frustumCulled = true
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
@@ -66,7 +67,7 @@ const start = () => {
   composer.addPass(toneMappingPass);
 
   const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-  sun.position.set(20, 20, 20);
+  sun.position.set(-20, 10, 20);
   sun.shadow.camera = new THREE.OrthographicCamera(-40, 40, 40, -40, 0.5, 100);
   sun.shadow.camera.position.copy(sun.position);
   sun.shadow.camera.lookAt(scene.position);
@@ -81,7 +82,6 @@ const start = () => {
     magFilter: THREE.LinearFilter,
     format: THREE.RGBAFormat,
     type: THREE.FloatType,
-
   });
 
   waterMaterial = getWaterMaterial({ shadowMap: sun.shadow.map.texture });
@@ -95,9 +95,11 @@ const start = () => {
   waterMaterial.uniforms.u_distanceField.value = distanceFieldTexture;
   shadowMapScene.add(cliffGroup);
 
-  const sky = new Sky();
-  sky.scale.setScalar( 450000 );
-  scene.add(sky);
+  // const sky = new Sky();
+  // sky.scale.setScalar( 450000 );
+  // scene.add(sky);
+  scene.background = skyBox;
+  scene.backgroundIntensity = 2.0;
 
   camera.position.y = 20;
   camera.position.z = -20;
@@ -112,6 +114,7 @@ const start = () => {
     // Render cliff shadow
     cliff.material = shadowMaterial;
     renderer.setRenderTarget(sun.shadow.map);
+    renderer.clear();
     renderer.render(scene, sun.shadow.camera);
     renderer.setRenderTarget(null);
     cliff.material = cliffMaterial!;
@@ -132,7 +135,7 @@ const start = () => {
     cliffMaterial!.uniforms.u_shadowCameraPosition.value.copy(sun.shadow.camera.position);
     cliffMaterial!.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
     cliffMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
-    sky.material.uniforms.sunPosition.value.copy(sun.position);
+    // sky.material.uniforms.sunPosition.value.copy(sun.position);
   
     composer.render()
     setFrameTime(time - prevFrameTime)

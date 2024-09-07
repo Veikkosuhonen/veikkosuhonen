@@ -4,5 +4,5 @@ import shadowFragmentShader from '../../../glsl/shadow.frag';
 
 export const shadowMaterial = new THREE.ShaderMaterial({
   vertexShader: vertexShader,
-  fragmentShader: shadowFragmentShader
+  fragmentShader: shadowFragmentShader,
 });
