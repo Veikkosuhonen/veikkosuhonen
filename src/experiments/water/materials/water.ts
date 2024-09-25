@@ -17,7 +17,7 @@ const vertexShader = /* glsl */`
 #define _WaveBend 0.1
 #define _WaveBendLength 0.1
 #define _WaveShape 0.4
-#define _WaveAmp 0.5
+#define _WaveAmp 0.8
 #define _WaveScale 2.0
 uniform float u_time;
 

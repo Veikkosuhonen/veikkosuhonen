@@ -12,6 +12,7 @@ import { createGeometry } from "./GeneratedGeometry"
 import { shadowMaterial } from "./materials/shadow"
 import { createCliff } from "./createCliff"
 import { skyBox } from "./skybox"
+import { Howl } from 'howler'
 
 let waterMaterial: THREE.ShaderMaterial|null = null;
 let cliffMaterial: THREE.ShaderMaterial|null = null;
@@ -154,24 +155,41 @@ const start = () => {
 const [frameTime, setFrameTime] = createSignal(0)
 
 export default function Water() {
+  let audio: Howl|undefined
 
   onMount(() => {
     start()
+    audio = new Howl({
+      src: ['/assets/oceanscape1.mp3'],
+      volume: 0.2,
+      loop: true,
+      html5: true,
+    });
   })
 
   return (
     <div class="bg-blue relative flex flex-col">
-      <div class="relative">
+      <div class="relative" onmousedown={() => {
+        if (!audio!.playing()) {
+          audio!.play()
+        }
+      }}>
         <canvas id="water" class="bg-transparent fixed top-0 w-full h-screen"></canvas>
         <div id="hud"/>
       </div>
       <div class="absolute text-amber-500 font-bold bg-slate-900/50 p-2 m-2 rounded-md">
         <p>{frameTime().toFixed(1)} ms</p>
         <p>Drag to pan, scroll to zoom</p>
-        <button class="mt-4 p-1 border border-amber-500 rounded-md" onClick={() => {
-          waterMaterial!.wireframe = !waterMaterial!.wireframe
-          cliffMaterial!.wireframe = !cliffMaterial!.wireframe
-        }}>Toggle wireframe</button>
+        <div class="mt-4 flex flex-col gap-2">
+          <button class="p-1 border border-amber-500 rounded-md" onClick={() => {
+            waterMaterial!.wireframe = !waterMaterial!.wireframe
+            cliffMaterial!.wireframe = !cliffMaterial!.wireframe
+          }}>Toggle wireframe</button>
+          <button class="p-1 rounded-md" onClick={() => {
+            audio?.playing() ? audio!.pause() : audio!.play()
+          }
+          }>Toggle sound</button>
+        </div>
       </div>
     </div>
   )
