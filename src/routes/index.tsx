@@ -1,7 +1,8 @@
 import { Icon } from "solid-heroicons"
 import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
-import { createSignal } from "solid-js"
+import { Component, createSignal, JSXElement } from "solid-js"
+import { CloudSvg } from "~/components/CloudSvg";
 import { EmbersCanvas } from "~/experiments/embers/Canvas"
 
 export default function Home() {
@@ -12,18 +13,22 @@ export default function Home() {
 
   return (
 
-    <main class="flex-grow flex flex-col relative mt-12">
+    <main class="flex-grow flex flex-col relative mt-2">
+      <CloudSvg />
       <article class="px-8 font-light container mx-auto">
-        <h1 class="text-4xl mt-8 font-serif flex gap-4">
+        <h1 class="text-4xl mt-32 font-serif flex gap-4 text-slate-900">
           Hi and welcome to my website!
           <button onMouseDown={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
             <Icon path={sparkles} style="width: 24px"/>
           </button>
         </h1>
-        <p class="mt-8">
+        <p class="mt-8 text-slate-900">
           This place is mainly for random browser apps & experiments I sometimes get an irresistible urge to make.
         </p>
-        <h2 class="text-4xl mt-16 font-serif">About me</h2>
+        <div class="h-96 flex">
+          <img src="/assets/me.jpg" class="h-20 w-20 md:h-32 md:w-32 object-cover ml-auto mt-auto brightness-75 rounded-full shadow-lg" />
+        </div>
+        <h2 class="text-4xl font-serif">About me</h2>
         <p class="mt-8">
           I'm Veikko, a software engineer from Helsinki with a positive look on life, the universe and everything.
           Like everybody else, I mostly work in the JS mines, but I've also experience with Java, Python, Ruby, C++, C# and Rust.
@@ -40,7 +45,6 @@ export default function Home() {
           Go check out the experiments section for some cool things
         </p>
       </article>
-      <EmbersCanvas embersOn={embersOn()} />
     </main>
   )
 }

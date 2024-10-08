@@ -61,7 +61,7 @@ const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  =
     <div class="overflow-visible w-100 h-100 font-serif" ref={cardElement} style={{ perspective: "800px" }} onMouseLeave={() => setRotation([0, 0])}>
       <animated.a 
         href={props.path}
-        class="w-100 h-100 rounded-md shadow-xl shadow-slate-800/50 hover:shadow-fuchsia-500/50 border border-black hover:border-fuchsia-200 text-transparent hover:text-white text-4xl font-bold flex items-center justify-center px-8 py-16 transition-colors duration-200 z-10"
+        class="w-100 h-100 rounded-md shadow-xl shadow-sunset-600/50 hover:shadow-sunset-400/50 border border-black hover:border-sunset-300 text-transparent hover:text-white text-4xl font-bold flex items-center justify-center px-8 py-16 transition-colors duration-200 z-10"
         style={{ transform: styles().transform, "background-image": `url(${props.imageUrl})`, "background-size": "cover", "mix-blend-mode": "multiply" }}
         onMouseMove={updateRotation}
       >
@@ -97,11 +97,11 @@ const Experiment: Component<{ title: string, path: string, imageUrl: string, tex
   }
 
   return (
-    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} class="aspect-[3/2] w-[30vw]">
-      <div class="rounded-lg bg-slate-900 px-2 pt-1 pb-2">
+    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} class="aspect-[3/2] w-80">
+      <div class="rounded-lg bg-sunset-500 px-2 pt-1 pb-2">
         <ImageLink title={props.title} path={props.path} imageUrl={props.imageUrl}/>
       </div>
-      <animated.p class="text-slate-200 font-light rounded-lg p-4 mt-2 -z-10 bg-slate-900/90" style={styles()}>
+      <animated.p class="text-slate-200 font-light rounded-lg p-4 mt-2 -z-10 bg-gradient-to-b from-sunset-500 to-sunset-600" style={styles()}>
         {props.text}
       </animated.p>
     </div>
@@ -113,7 +113,7 @@ export default function Experiments() {
 
   return (
 
-    <main class="flex-grow relative mt-12">
+    <main class="flex-grow relative mt-12 mx-2">
       <article class="container mx-auto">
         <h1 class="text-6xl font-serif mt-8">
           Experiments
@@ -122,7 +122,7 @@ export default function Experiments() {
           This is a small collection of some graphics-related web experiments I've made for fun, and put on this website.
         </p>
         <section>
-          <div class="flex gap-4 mb-4">
+          <div class="flex flex-wrap gap-2">
             {experiments.map((experiment) => (
               <Experiment title={experiment.title} path={experiment.path} imageUrl={experiment.imageUrl} text={experiment.text} />
             ))}

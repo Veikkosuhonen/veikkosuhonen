@@ -10,7 +10,7 @@ export default function Root() {
   return (
     <Router
       root={props => (
-        <div class="flex flex-col h-[100vh] text-slate-100">
+        <div class="flex flex-col h-[100vh] text-slate-100 font-sans">
           <NavBar />
           <Suspense>{props.children}</Suspense>
           <Footer />

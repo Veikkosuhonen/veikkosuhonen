@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="590" height="300" viewBox="0 0 590 300" xml:space="preserve">
+<desc>Created with Fabric.js 3.6.6</desc>
+<defs>
+	<linearGradient id="top" x1="0%" y1="0%" x2="100%" y2="0%">
+		<stop offset="0%" style="stop-color:#CD8576;stop-opacity:1" />
+		<stop offset="100%" style="stop-color:#924C54;stop-opacity:1" />
+	</linearGradient>
+	<linearGradient id="c1" x1="0%" y1="0%" x2="100%" y2="0%">
+		<stop offset="0%" style="stop-color:#AF6A63;stop-opacity:1" />
+		<stop offset="100%" style="stop-color:#503D50;stop-opacity:1" />
+	</linearGradient>
+	<linearGradient id="c2" x1="0%" y1="0%" x2="100%" y2="0%">
+		<stop offset="0%" style="stop-color:#875A5E;stop-opacity:1" />
+		<stop offset="100%" style="stop-color:#4B3446;stop-opacity:1" />
+	</linearGradient>
+	<linearGradient id="c3" x1="0%" y1="0%" x2="100%" y2="0%">
+		<stop offset="0%" style="stop-color:#4E3C4A;stop-opacity:1" />
+		<stop offset="100%" style="stop-color:#29273B;stop-opacity:1" />
+	</linearGradient>
+	<linearGradient id="c4" x1="0%" y1="0%" x2="0%" y2="100%">
+		<stop offset="0%" style="stop-color:#38344A;stop-opacity:1" />
+		<stop offset="100%" style="stop-color:#182542;stop-opacity:1" />
+	</linearGradient>
+</defs>
+<g transform="matrix(0.67 0 0 0.67 299.62 222.6)"  >
+<g style=""   >
+		<g transform="matrix(1 0 0 1.07 0 5.0)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#top); fill-rule: nonzero; opacity: 1;"  transform=" translate(-450, -489.5)" d="M 0 378 L 21.5 380.3 C 43 382.7 86 387.3 128.8 392.8 C 171.7 398.3 214.3 404.7 257.2 415.8 C 300 427 343 443 385.8 448.2 C 428.7 453.3 471.3 447.7 514.2 434.7 C 557 421.7 600 401.3 642.8 405.5 C 685.7 409.7 728.3 438.3 771.2 448 C 814 457.7 857 448.3 878.5 443.7 L 900 439 L 900 601 L 878.5 601 C 857 601 814 601 771.2 601 C 728.3 601 685.7 601 642.8 601 C 600 601 557 601 514.2 601 C 471.3 601 428.7 601 385.8 601 C 343 601 300 601 257.2 601 C 214.3 601 171.7 601 128.8 601 C 86 601 43 601 21.5 601 L 0 601 Z" stroke-linecap="round" />
+</g>
+		<g transform="matrix(1 0 0 1 0 5.83)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#c1); fill-rule: nonzero; opacity: 1;"  transform=" translate(-450, -489.5)" d="M 0 378 L 21.5 380.3 C 43 382.7 86 387.3 128.8 392.8 C 171.7 398.3 214.3 404.7 257.2 415.8 C 300 427 343 443 385.8 448.2 C 428.7 453.3 471.3 447.7 514.2 434.7 C 557 421.7 600 401.3 642.8 405.5 C 685.7 409.7 728.3 438.3 771.2 448 C 814 457.7 857 448.3 878.5 443.7 L 900 439 L 900 601 L 878.5 601 C 857 601 814 601 771.2 601 C 728.3 601 685.7 601 642.8 601 C 600 601 557 601 514.2 601 C 471.3 601 428.7 601 385.8 601 C 343 601 300 601 257.2 601 C 214.3 601 171.7 601 128.8 601 C 86 601 43 601 21.5 601 L 0 601 Z" stroke-linecap="round" />
+</g>
+		<g transform="matrix(1 0 0 1 0 31.83)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#c2); fill-rule: nonzero; opacity: 1;"  transform=" translate(-450, -515.5)" d="M 0 430 L 21.5 439.2 C 43 448.3 86 466.7 128.8 477.3 C 171.7 488 214.3 491 257.2 487.8 C 300 484.7 343 475.3 385.8 468 C 428.7 460.7 471.3 455.3 514.2 460.2 C 557 465 600 480 642.8 475.7 C 685.7 471.3 728.3 447.7 771.2 444.8 C 814 442 857 460 878.5 469 L 900 478 L 900 601 L 878.5 601 C 857 601 814 601 771.2 601 C 728.3 601 685.7 601 642.8 601 C 600 601 557 601 514.2 601 C 471.3 601 428.7 601 385.8 601 C 343 601 300 601 257.2 601 C 214.3 601 171.7 601 128.8 601 C 86 601 43 601 21.5 601 L 0 601 Z" stroke-linecap="round" />
+</g>
+		<g transform="matrix(1 0 0 1 0 56.83)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#c3); fill-rule: nonzero; opacity: 1;"  transform=" translate(-450, -540.5)" d="M 0 480 L 21.5 484.5 C 43 489 86 498 128.8 500.8 C 171.7 503.7 214.3 500.3 257.2 497.5 C 300 494.7 343 492.3 385.8 490.8 C 428.7 489.3 471.3 488.7 514.2 489.2 C 557 489.7 600 491.3 642.8 489.7 C 685.7 488 728.3 483 771.2 487 C 814 491 857 504 878.5 510.5 L 900 517 L 900 601 L 878.5 601 C 857 601 814 601 771.2 601 C 728.3 601 685.7 601 642.8 601 C 600 601 557 601 514.2 601 C 471.3 601 428.7 601 385.8 601 C 343 601 300 601 257.2 601 C 214.3 601 171.7 601 128.8 601 C 86 601 43 601 21.5 601 L 0 601 Z" stroke-linecap="round" />
+</g>
+		<g transform="matrix(1 0 0 1 0 71.83)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#c4); fill-rule: nonzero; opacity: 1;"  transform=" translate(-450, -555.5)" d="M 0 510 L 21.5 516.8 C 43 523.7 86 537.3 128.8 538.5 C 171.7 539.7 214.3 528.3 257.2 522 C 300 515.7 343 514.3 385.8 520.2 C 428.7 526 471.3 539 514.2 547.2 C 557 555.3 600 558.7 642.8 556.2 C 685.7 553.7 728.3 545.3 771.2 545.8 C 814 546.3 857 555.7 878.5 560.3 L 900 565 L 900 601 L 878.5 601 C 857 601 814 601 771.2 601 C 728.3 601 685.7 601 642.8 601 C 600 601 557 601 514.2 601 C 471.3 601 428.7 601 385.8 601 C 343 601 300 601 257.2 601 C 214.3 601 171.7 601 128.8 601 C 86 601 43 601 21.5 601 L 0 601 Z" stroke-linecap="round" />
+</g>
+</g>
+</g>
+</svg>
