@@ -5,6 +5,7 @@ import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
 import { Component, createSignal, JSXElement } from "solid-js"
 import { CloudSvg } from "~/components/CloudSvg";
 import { EmbersCanvas } from "~/experiments/embers/Canvas"
+import { WeekendCounter } from "~/experiments/weekendCounter/WeekendCounter";
 
 export default function Home() {
 
@@ -16,8 +17,8 @@ export default function Home() {
 
     <main class="flex-grow flex flex-col relative items-center">
       <CloudSvg />
-      <article class="px-12 font-light container mx-auto">
-        <h1 class="text-4xl mt-32 font-serif flex gap-4 text-slate-900">
+      <article class="p-8 sm:p-16 md:p-32 font-light container mx-auto">
+        <h1 class="text-4xl font-serif flex gap-4 text-slate-900">
           Hi and welcome to my website!
           <button onMouseDown={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
             <Icon path={sparkles} style="width: 24px"/>
@@ -42,9 +43,10 @@ export default function Home() {
           During that time, I've most enjoyed 
           <span>graphics & game development</span>, <span>shader development</span>, writing a <a>compiler from scratch</a> and building a bunch of web apps.
         </p>
-        <p class="mt-8">
+        <p class="mt-8 mb-48">
           Go check out the experiments section for some cool things
         </p>
+        <WeekendCounter />
       </article>
     </main>
   )
