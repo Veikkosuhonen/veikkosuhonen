@@ -42,7 +42,7 @@ const NavBar = () => {
   onMount(() => handleLocationChange(location.pathname))
 
   return (
-    <nav class="z-10 relative mb-4">
+    <nav class="z-10 relative mb-10">
       <div class="h-[2px] mb-4"/>
       <ul class="container flex flex-wrap items-center p-1 text-gray-300 overflow-hidden">
         {links.map((link) => (
@@ -50,7 +50,7 @@ const NavBar = () => {
             <A 
               href={link.href} 
               ref={link.el}
-              class="hover:text-white transition-colors duration-200 text-nowrap"
+              class="hover:text-white transition-colors duration-200 text-nowrap font-serif"
               activeClass="text-pink-50"
             >
               {link.text}

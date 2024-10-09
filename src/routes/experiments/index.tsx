@@ -1,3 +1,4 @@
+import "./index.css"
 import { createMousePosition, createPositionToElement } from "@solid-primitives/mouse";
 import { Component, createSignal } from "solid-js"
 import { createSpring, animated, config } from "solid-spring";

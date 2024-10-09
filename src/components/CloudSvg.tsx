@@ -1,6 +1,6 @@
 export const CloudSvg = () => (
-  <div class="rounded-xl absolute -z-10 h-[100vh] w-[95%] mx-6 flex flex-col">
-    <div class="flex-1 rounded-t-xl" style={{
+  <div class="absolute -z-10 h-[100vh] container mx-auto flex flex-col">
+    <div class="mx-6 flex-1 rounded-t-xl relative" style={{
       "background-color": "rgb(249,221,185)",
       background: "linear-gradient(90deg, rgba(249,221,185,1) 0%, rgba(244,188,150,1) 25%, rgba(238,129,111,1) 50%, rgba(163,95,94,1) 75%, rgba(84,77,98,1) 100%)",
     }}>
@@ -14,7 +14,7 @@ export const CloudSvg = () => (
         }}/>
       </div>
     </div>
-    <div class="flex-1 bg-[#182542] rounded-b-xl flex flex-col">
+    <div class="mx-6 flex-1 bg-[#182542] rounded-b-xl flex flex-col">
       <div class="mt-auto" style={{
         rotate: "-90deg",
         translate: "49% -48vw",

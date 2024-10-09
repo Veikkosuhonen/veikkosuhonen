@@ -1,3 +1,4 @@
+import "./index.css";
 import { Icon } from "solid-heroicons"
 import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
@@ -13,9 +14,9 @@ export default function Home() {
 
   return (
 
-    <main class="flex-grow flex flex-col relative mt-2">
+    <main class="flex-grow flex flex-col relative items-center">
       <CloudSvg />
-      <article class="px-8 font-light container mx-auto">
+      <article class="px-12 font-light container mx-auto">
         <h1 class="text-4xl mt-32 font-serif flex gap-4 text-slate-900">
           Hi and welcome to my website!
           <button onMouseDown={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
