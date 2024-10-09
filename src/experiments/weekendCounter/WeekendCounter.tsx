@@ -72,9 +72,9 @@ export const WeekendCounter = () => {
         const data = imageData.data
         for (let i = 0; i < mapping.length; i ++) {
           if (mapping[i] < secondsUntilWeekend) {
-            data[4 * i] = 50
-            data[4 * i + 1] = 180
-            data[4 * i + 2] = 80
+            data[4 * i] = 30
+            data[4 * i + 1] = 160
+            data[4 * i + 2] = 60
             data[4 * i + 3] = 255
           }
         }
@@ -127,7 +127,7 @@ export const WeekendCounter = () => {
   return (
     <div class="flex">
       <div class="mx-auto">
-        <canvas ref={canvas} width={canvasW} height={canvasW} class="bg-black" />
+        <canvas ref={canvas} width={canvasW} height={canvasW} class="bg-black" style={{ "image-rendering": "pixelated" }} />
         <h1 class="font-serif mt-2 text-lg">
           Weekend Countdown
         </h1>
@@ -136,6 +136,7 @@ export const WeekendCounter = () => {
         </p>
         <p>
           Only <span class="font-mono font-light">{pixelsRemaining()}</span> pixels remaining!
+          <span class="text-xs text-slate-200 ml-1">(I am not yet sure whether this brings joy or despair)</span>
         </p>
       </div>
     </div>
