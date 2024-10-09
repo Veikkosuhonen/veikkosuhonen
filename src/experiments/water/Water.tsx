@@ -1,5 +1,5 @@
 import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, ToneMappingEffect } from "postprocessing"
-import { createSignal, onMount } from "solid-js"
+import { createSignal, on, onCleanup, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
 import { Sky } from "three/examples/jsm/objects/Sky"
@@ -165,6 +165,10 @@ export default function Water() {
       loop: true,
       html5: true,
     });
+  })
+
+  onCleanup(() => {
+    audio?.unload()
   })
 
   return (

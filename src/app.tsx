@@ -6,7 +6,7 @@ import { Footer } from "./components/Footer"
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start";
 
-export default function Root() {  
+export default function Root() {
   return (
     <Router
       root={props => (
