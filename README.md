@@ -3,7 +3,7 @@
 I'm Veikko, a 500x rockstar cowboy kickass hacker programmer with a passion in
 
 - Human-computer interaction
-- Generative Art & Demoscene
+- Generative Art (not the genAI thing)
 - Graphics & Game programming
 - Data science & ML
 - Astronomy
