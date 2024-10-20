@@ -1,4 +1,4 @@
-import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, ToneMappingEffect } from "postprocessing"
+import { BlendFunction, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, DepthOfFieldEffect, ToneMappingEffect } from "postprocessing"
 import { createSignal, on, onCleanup, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
@@ -55,7 +55,17 @@ const start = () => {
   });
   composer.addPass(new RenderPass(scene, camera));
 
-  const effect = new SelectiveBloomEffect(scene, camera, {
+  const dofEffect = new DepthOfFieldEffect(camera, {
+    worldFocusDistance: 500,
+    focalLength: 0.3,
+    bokehScale: 3,
+    height: 540,
+  })
+  const dofPass = new EffectPass(camera, dofEffect);
+  dofEffect.cocMaterial.adoptCameraSettings(camera);
+  composer.addPass(dofPass);
+
+  const bloomEffect = new SelectiveBloomEffect(scene, camera, {
     radius: 0.7,
     blendFunction: BlendFunction.ADD,
     mipmapBlur: true,
@@ -63,9 +73,9 @@ const start = () => {
     luminanceSmoothing: 0.1,
     intensity: 2.0,
   });
-  effect.inverted = true;
+  bloomEffect.inverted = true;
 
-  const effectPass = new EffectPass(camera, effect);
+  const effectPass = new EffectPass(camera, bloomEffect);
   composer.addPass(effectPass);
 
   const toneMappingEffect = new ToneMappingEffect({
@@ -116,6 +126,7 @@ const start = () => {
   const controls = new MapControls(camera, canvas);
   controls.target.set(0, 1.0, 0);
   controls.update();
+  // dofEffect.target = controls.target;
 
   let prevFrameStart = 0;
   const animate: FrameRequestCallback = (time) => {
@@ -147,8 +158,11 @@ const start = () => {
     cliffMaterial!.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
     cliffMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
     // sky.material.uniforms.sunPosition.value.copy(sun.position);
-  
+
+    dofEffect.cocMaterial.focusDistance = focusDistance();
+
     composer.render();
+    console.log(dofEffect.cocMaterial.focusDistance);
     setFrameTime(time - prevFrameStart)
     prevFrameStart = time
     stats.endQuery();
@@ -164,6 +178,7 @@ const start = () => {
 }
 
 const [frameTime, setFrameTime] = createSignal(0)
+const [focusDistance, setFocusDistance] = createSignal(0.95)
 
 export default function Water() {
   let audio: Howl|undefined
@@ -183,7 +198,7 @@ export default function Water() {
   })
 
   return (
-    <div class="bg-blue relative flex flex-col">
+    <div class="bg-blue relative flex flex-col text-sm">
       <div class="relative" onmousedown={() => {
         if (!audio!.playing()) {
           audio!.play()
@@ -204,6 +219,13 @@ export default function Water() {
             audio?.playing() ? audio!.pause() : audio!.play()
           }
           }>Toggle sound</button>
+        </div>
+        
+        <div class="flex flex-col mt-4">
+          <label for="focus" class="text-xs">Camera focus distance</label>
+          <input type="range" min="0" max="1" step="0.01" value={focusDistance()} class="w-40" oninput={(e) => {
+            setFocusDistance(parseFloat(e.currentTarget.value))
+          }}/>
         </div>
       </div>
     </div>

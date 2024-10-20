@@ -55,8 +55,8 @@ void main() {
     vec2 depthMapUv = shadowCoord.xy;
     float depth_depthMap = unpackRGBAToDepth(texture2D(u_shadowMap, depthMapUv));
 
-    float cosTheta = dot(normalize(u_sunDirection), normal);
-    float bias = 0.0005 * tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    float ndotl = max(0.0, dot(normalize(u_sunDirection), normal));
+    float bias = 0.005 * tan(acos(ndotl));
     bias = clamp(bias, 0.0, 0.01);
     
     float shadowFactor = step(depth_shadowCoord - bias, depth_depthMap);
@@ -65,9 +65,9 @@ void main() {
     vec3 viewDirection = normalize(cameraPosition - vPosition);
     
 
-    vec2 rippleNormal1 = abs(normal.z) * (texture2D(u_rippleNormal, vPosition.xy / 5.0 + vec2(0.9, 0.1)).xy * 2.0 - 1.0);
-    vec2 rippleNormal2 = abs(normal.y) * (texture2D(u_rippleNormal, vPosition.xz / 5.0 - vec2(0.8, 0.2)).xy * 2.0 - 1.0);
-    vec2 rippleNormal3 = abs(normal.x) * (texture2D(u_rippleNormal, vPosition.yz / 5.0 + vec2(0.1,-0.9)).xy * 2.0 - 1.0);
+    vec2 rippleNormal1 = abs(normal.z) * (texture2D(u_rippleNormal, vPosition.xy / 3.0 + vec2(0.9, 0.1)).xy * 2.0 - 1.0);
+    vec2 rippleNormal2 = abs(normal.y) * (texture2D(u_rippleNormal, vPosition.xz / 3.0 - vec2(0.8, 0.2)).xy * 2.0 - 1.0);
+    vec2 rippleNormal3 = abs(normal.x) * (texture2D(u_rippleNormal, vPosition.yz / 3.0 + vec2(0.1,-0.9)).xy * 2.0 - 1.0);
     vec2 rippleNormal = rippleNormal1 + rippleNormal2 + rippleNormal3;
   
     normal.xz += rippleNormal * u_rippleStrength;
@@ -75,7 +75,12 @@ void main() {
 
     vec3 lightDirection = normalize(u_sunDirection);
     vec3 halfwayDirection = normalize(lightDirection + viewDirection);
-    vec3 reflectionDirection = reflect(-viewDirection, normal);
+    
+    vec3 specNormal = normal;
+    specNormal.xz *= 1.5;
+    specNormal = normalize(specNormal);
+    float spec = pow(max(dot(halfwayDirection, specNormal), 0.0), 100.0) * ndotl * smoothstep(1.5, 0.0, vPosition.y) * 0.2;
+    vec3 specularColor = vec3(1.0) * spec * shadowFactor;
 
     // Diffuse
     vec3 rock = vec3(0.2, 0.2, 0.2);
@@ -91,7 +96,7 @@ void main() {
     vec3 skybox = textureCube(u_skybox, normal).rgb;
     diffuse *= 1.0 + skybox * 0.5;
 
-    vec3 color = diffuse;
+    vec3 color = diffuse + specularColor;
 
     float dist = length(vPosition - cameraPosition);
     float fogFactor = pow(2.0, -dist * 0.0004);
