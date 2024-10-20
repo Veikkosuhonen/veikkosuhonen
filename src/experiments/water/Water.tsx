@@ -33,14 +33,23 @@ const start = () => {
   camera.frustumCulled = true
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
+    powerPreference: 'high-performance',
     antialias: false,
     stencil: false,
     depth: true,
     logarithmicDepthBuffer: true,
     precision: 'highp',
   })
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-  renderer.setSize(window.innerWidth, window.innerHeight)
+  const stats = new GPUStatsPanel(renderer.getContext());
+  stats.dom.style.position = 'absolute';
+  stats.dom.style.top = '0px';
+  stats.dom.style.right = '0px';
+  stats.dom.style.zIndex = '100';
+  document.body.appendChild(stats.dom);
+
   const composer = new EffectComposer(renderer, {
     frameBufferType: THREE.HalfFloatType,
   });
@@ -50,14 +59,14 @@ const start = () => {
     radius: 0.7,
     blendFunction: BlendFunction.ADD,
     mipmapBlur: true,
-    luminanceThreshold: 4.0,
+    luminanceThreshold: 2.0,
     luminanceSmoothing: 0.1,
-    intensity: 1.0
+    intensity: 2.0,
   });
-
   effect.inverted = true;
+
   const effectPass = new EffectPass(camera, effect);
-  // composer.addPass(effectPass);
+  composer.addPass(effectPass);
 
   const toneMappingEffect = new ToneMappingEffect({
     mode: THREE.ACESFilmicToneMapping,
@@ -108,9 +117,10 @@ const start = () => {
   controls.target.set(0, 1.0, 0);
   controls.update();
 
-  let prevFrameTime = 0;
+  let prevFrameStart = 0;
   const animate: FrameRequestCallback = (time) => {
     requestAnimationFrame(animate);
+    stats.startQuery();
 
     // Render cliff shadow
     cliff.material = shadowMaterial;
@@ -138,9 +148,10 @@ const start = () => {
     cliffMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
     // sky.material.uniforms.sunPosition.value.copy(sun.position);
   
-    composer.render()
-    setFrameTime(time - prevFrameTime)
-    prevFrameTime = time
+    composer.render();
+    setFrameTime(time - prevFrameStart)
+    prevFrameStart = time
+    stats.endQuery();
   }
 
   animate(0.0);
