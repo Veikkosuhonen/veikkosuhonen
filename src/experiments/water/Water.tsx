@@ -13,6 +13,7 @@ import { shadowMaterial } from "./materials/shadow"
 import { createCliff } from "./createCliff"
 import { skyBox } from "./skybox"
 import { Howl } from 'howler'
+import { createHeightmap } from "./createHeightmap"
 
 let waterMaterial: THREE.ShaderMaterial|null = null;
 let cliffMaterial: THREE.ShaderMaterial|null = null;
@@ -29,7 +30,7 @@ const start = () => {
   const shadowMapScene = new THREE.Scene()
   scene.add(shadowMapScene);
 
-  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1100)
+  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000)
   camera.frustumCulled = true
   const renderer = new THREE.WebGLRenderer({ 
     canvas,
@@ -56,10 +57,9 @@ const start = () => {
   composer.addPass(new RenderPass(scene, camera));
 
   const dofEffect = new DepthOfFieldEffect(camera, {
-    worldFocusDistance: 500,
-    focalLength: 0.3,
-    bokehScale: 3,
-    height: 540,
+    focalLength: 0.1,
+    bokehScale: 5,
+    height: 720,
   })
   const dofPass = new EffectPass(camera, dofEffect);
   dofEffect.cocMaterial.adoptCameraSettings(camera);
@@ -76,7 +76,7 @@ const start = () => {
   bloomEffect.inverted = true;
 
   const effectPass = new EffectPass(camera, bloomEffect);
-  composer.addPass(effectPass);
+  // composer.addPass(effectPass);
 
   const toneMappingEffect = new ToneMappingEffect({
     mode: THREE.ACESFilmicToneMapping,
@@ -87,8 +87,8 @@ const start = () => {
   composer.addPass(toneMappingPass);
 
   const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-  sun.position.set(-20, 10, 20);
-  sun.shadow.camera = new THREE.OrthographicCamera(-40, 40, 40, -40, 0.5, 100);
+  sun.position.set(-40, 10, 40);
+  sun.shadow.camera = new THREE.OrthographicCamera(-45, 45, 45, -45, 1.0, 110);
   sun.shadow.camera.position.copy(sun.position);
   sun.shadow.camera.lookAt(scene.position);
   shadowMapScene.add(sun.shadow.camera);
@@ -104,16 +104,20 @@ const start = () => {
     type: THREE.FloatType,
   });
 
-  waterMaterial = getWaterMaterial({ shadowMap: sun.shadow.map.texture });
-  cliffMaterial = getCliffMaterial({ shadowMap: sun.shadow.map.texture });
+  const heightMap = createHeightmap(renderer);
+
+  waterMaterial = getWaterMaterial({ shadowMap: sun.shadow.map.texture, heightMap });
+  cliffMaterial = getCliffMaterial({ shadowMap: sun.shadow.map.texture, heightMap });
+  shadowMaterial.uniforms.u_heightMap.value = heightMap;
 
   const waterChunks = createLodChunkArea(new THREE.Vector3(0, 0, 0), 12, waterMaterial)
   scene.add(...waterChunks);
 
-  const { cliffGroup, texture: distanceFieldTexture, camera: distanceFieldCamera } = createCliff(renderer, cliffMaterial);
-  const cliff = cliffGroup.children[0] as THREE.Mesh;
-  waterMaterial.uniforms.u_distanceField.value = distanceFieldTexture;
-  shadowMapScene.add(cliffGroup);
+  const cliffMesh = new THREE.PlaneGeometry(64, 64, 256, 256);
+  cliffMesh.rotateX(-Math.PI / 2);
+  const cliff = new THREE.Mesh(cliffMesh, cliffMaterial);
+
+  shadowMapScene.add(cliff);
 
   // const sky = new Sky();
   // sky.scale.setScalar( 450000 );
@@ -162,7 +166,6 @@ const start = () => {
     dofEffect.cocMaterial.focusDistance = focusDistance();
 
     composer.render();
-    console.log(dofEffect.cocMaterial.focusDistance);
     setFrameTime(time - prevFrameStart)
     prevFrameStart = time
     stats.endQuery();
@@ -178,7 +181,7 @@ const start = () => {
 }
 
 const [frameTime, setFrameTime] = createSignal(0)
-const [focusDistance, setFocusDistance] = createSignal(0.95)
+const [focusDistance, setFocusDistance] = createSignal(0.96)
 
 export default function Water() {
   let audio: Howl|undefined
@@ -223,7 +226,7 @@ export default function Water() {
         
         <div class="flex flex-col mt-4">
           <label for="focus" class="text-xs">Camera focus distance</label>
-          <input type="range" min="0" max="1" step="0.01" value={focusDistance()} class="w-40" oninput={(e) => {
+          <input type="range" min="0.4" max="1" step="0.01" value={focusDistance()} class="w-40" oninput={(e) => {
             setFocusDistance(parseFloat(e.currentTarget.value))
           }}/>
         </div>

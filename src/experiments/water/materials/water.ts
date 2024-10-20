@@ -23,7 +23,7 @@ uniform float u_time;
 
 uniform mat4 u_shadowCameraViewMatrix;
 uniform mat4 u_shadowCameraProjectionMatrix;
-uniform sampler2D u_distanceField;
+uniform sampler2D u_heightMap;
 
 varying vec4 vShadowCoord;
 varying float vDistanceField;
@@ -88,10 +88,11 @@ void main() {
     vec3 positionWS = (modelMatrix * vec4(position, 1.0)).xyz;
     vec2 worldUV = positionWS.xz;
 
-    vec2 distanceFieldCoord = worldUV / 20.0 / 1.2 + vec2(0.5, -0.5);
+    vec2 distanceFieldCoord = worldUV / 64.0 + vec2(0.5, -0.5);
     distanceFieldCoord.y = -distanceFieldCoord.y;
 
-    vDistanceField = texture2D(u_distanceField, distanceFieldCoord).r;
+    float h = texture2D(u_heightMap, distanceFieldCoord).r;
+    vDistanceField = 0.0 - h;
     float overBoundsX = step(0.95, distanceFieldCoord.x) * (distanceFieldCoord.x - 0.95);
     float overBoundsY = step(0.95, distanceFieldCoord.y) * (distanceFieldCoord.y - 0.95);
     float underBoundsX = step(distanceFieldCoord.x, 0.05) * -distanceFieldCoord.x;
@@ -159,7 +160,7 @@ uniform vec3 u_sunDirection;
 
 uniform vec3 u_shadowCameraPosition;
 uniform sampler2D u_shadowMap;
-uniform sampler2D u_distanceField;
+uniform sampler2D u_heightMap;
 
 // Varyings
 varying vec4 vShadowCoord;
@@ -234,7 +235,7 @@ void main() {
     float peak = max(0.0, vPeak);
     float foam = smoothstep(0.004, 0.05, peak) * u_foamAmount;
     foam *= (1.0 + smoothstep(1.0, 0.0, vDistanceField));
-    foam += pow(smoothstep(0.7, 0.1, vDistanceField), 8.0) * 0.3;
+    foam += pow(smoothstep(0.5, -0.1, vDistanceField), 16.0) * 0.4;
 
     // Foam decrease specular power
     float specularPower = u_specularPower * (1.0 - foam * 0.1);
@@ -288,9 +289,11 @@ rippleNormal.wrapS = THREE.MirroredRepeatWrapping;
 rippleNormal.wrapT = THREE.MirroredRepeatWrapping;
 
 export default ({
-  shadowMap
+  shadowMap,
+  heightMap,
 }: {
-  shadowMap: THREE.Texture
+  shadowMap: THREE.Texture,
+  heightMap: THREE.Texture,
 }) => new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
@@ -317,7 +320,7 @@ export default ({
     u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
     u_shadowCameraPosition: { value: new THREE.Vector3() },
     u_shadowMap: { value: shadowMap },
-    u_distanceField: { value: null },
+    u_heightMap: { value: heightMap },
     u_distanceCameraViewMatrix: { value: new THREE.Matrix4() },
     u_distanceCameraProjectionMatrix: { value: new THREE.Matrix4() },
   },

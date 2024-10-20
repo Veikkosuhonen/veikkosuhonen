@@ -6,6 +6,7 @@ const vertexShader = /* glsl */`
 
 uniform mat4 u_shadowCameraViewMatrix;
 uniform mat4 u_shadowCameraProjectionMatrix;
+uniform sampler2D u_heightMap;
 
 varying vec4 vShadowCoord;
 varying vec3 vPosition;
@@ -13,7 +14,25 @@ varying vec3 vNormal;
 
 
 void main() {
-    vec3 positionWS = (modelMatrix * vec4(position, 1.0)).xyz;
+    float y = texture2D(u_heightMap, uv).r;
+    vec3 newPos = position + vec3(0.0, 10.0 * y, 0.0);
+    vec3 positionWS = (modelMatrix * vec4(newPos, 1.0)).xyz;
+  
+    float s = 1.0/512.0;
+    vec3 off = vec3(s, s, 0.0);
+    float hL = texture2D(u_heightMap, uv - off.xz).r;
+    float hR = texture2D(u_heightMap, uv + off.xz).r;
+    float hD = texture2D(u_heightMap, uv - off.zy).r;
+    float hU = texture2D(u_heightMap, uv + off.zy).r;
+
+    // deduce terrain normal
+    vec3 normal = vec3(
+      hL - hR,
+      2. * s,
+      hU - hD
+    );
+    normal = normalize(normal.xyz);
+
     vPosition = positionWS;
     vNormal = normal;
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
@@ -84,9 +103,9 @@ void main() {
 
     // Diffuse
     vec3 rock = vec3(0.2, 0.2, 0.2);
-    vec3 grass = vec3(0.05, 0.2, 0.1);
+    vec3 grass = vec3(0.05, 0.18, 0.11);
 
-    vec3 diffuse = mix(rock, grass, clamp(0.0, 1.0, smoothstep(0.5, 0.8, normal.y) - smoothstep(1.5, 1.0, vPosition.y)));
+    vec3 diffuse = mix(rock, grass, clamp(0.0, 1.0, smoothstep(0.4, 0.7, normal.y) - smoothstep(1.5, 1.0, vPosition.y)));
     float diffuseSunLight = max(0.0, dot(normal, lightDirection)) * 0.4 * shadowFactor;
     float diffuseSkyLight = max(0.0, normal.y) * 0.4 * (0.5 + 0.5 * shadowFactor);
     float ambientLight = 0.12;
@@ -111,9 +130,11 @@ rippleNormal.wrapS = THREE.MirroredRepeatWrapping;
 rippleNormal.wrapT = THREE.MirroredRepeatWrapping;
 
 export default ({
-  shadowMap
+  shadowMap,
+  heightMap,
 }: {
-  shadowMap: THREE.Texture
+  shadowMap: THREE.Texture,
+  heightMap: THREE.Texture,
 }) => new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
@@ -128,6 +149,7 @@ export default ({
     u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
     u_shadowCameraPosition: { value: new THREE.Vector3() },
     u_shadowMap: { value: shadowMap },
+    u_heightMap: { value: heightMap }
   },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,
