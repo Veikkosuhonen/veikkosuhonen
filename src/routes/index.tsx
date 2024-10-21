@@ -1,8 +1,8 @@
-import "./index.css";
 import { Icon } from "solid-heroicons"
 import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
 import { Component, createSignal, JSXElement } from "solid-js"
+import { Background } from "~/components/Background";
 import { CloudSvg } from "~/components/CloudSvg";
 import { EmbersCanvas } from "~/experiments/embers/Canvas"
 import { WeekendCounter } from "~/experiments/weekendCounter/WeekendCounter";
@@ -14,7 +14,8 @@ export default function Home() {
   let yearsStudied = new Date().getFullYear() - 2019
 
   return (
-
+    <>
+    <Background bgUrl="/assets/reflections.svg" bgSize={512} />
     <main class="flex-grow flex flex-col relative items-center">
       <CloudSvg />
       <article class="p-8 sm:p-16 md:p-32 font-light container mx-auto">
@@ -49,5 +50,6 @@ export default function Home() {
         <WeekendCounter />
       </article>
     </main>
+    </>
   )
 }

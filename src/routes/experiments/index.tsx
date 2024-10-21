@@ -1,7 +1,7 @@
-import "./index.css"
 import { createMousePosition, createPositionToElement } from "@solid-primitives/mouse";
 import { Component, createSignal } from "solid-js"
 import { createSpring, animated, config } from "solid-spring";
+import { Background } from "~/components/Background";
 
 const experiments = [
   {
@@ -113,7 +113,8 @@ export default function Experiments() {
   
 
   return (
-
+    <>
+    <Background bgUrl="/assets/grid.svg" bgSize={256} />
     <main class="flex-grow relative mt-12 mx-2">
       <article class="container mx-auto">
         <h1 class="text-6xl font-serif mt-8">
@@ -131,6 +132,7 @@ export default function Experiments() {
         </section>
       </article>
     </main>
+    </>
   )
 }
   
