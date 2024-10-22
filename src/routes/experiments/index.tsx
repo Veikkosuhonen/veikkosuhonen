@@ -34,6 +34,12 @@ const experiments = [
     imageUrl: "https://live.staticflickr.com/65535/53914487061_c13c24abdf_h.jpg",
     text: "3D procedurally generated ocean & island"
   },
+  {
+    title: "VFD",
+    path: "/experiments/vfd",
+    imageUrl: "",
+    text: "VFD displays in CSS'"
+  },
 ]
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
   let cardElement: HTMLDivElement|undefined
