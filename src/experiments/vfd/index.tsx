@@ -11,6 +11,9 @@ export default function() {
           <VFDText value="7-segment displays using CSS" width="32px" height="64px" />
         </Tint>
       </h1>
+      <div class="mb-8">
+        <a href="https://github.com/Veikkosuhonen/veikkosuhonen/blob/master/src/experiments/vfd/index.tsx" class="text-sunset-300 underline">(source code)</a>
+      </div>
       <input 
         class="bg-black text-sunset-300 p-1 my-2 border border-sunset-400"
         type="number" 
@@ -28,6 +31,10 @@ export default function() {
       <Tint color="#EBFEFE">
         <VFDText value={text()} width="16px" height="32px" />
       </Tint>
+      <div class="my-4" />
+      <Tint color="#aaffaa">
+        <VFDText value="As you can see 7 segments is not quite enough for nice text. It's still readable though" width="10px" height="20px" />
+      </Tint>
     </main>
   )
 }
@@ -37,7 +44,7 @@ export const VFDText = (props: { value: string, width: string, height: string })
   const charsSegments = () => props.value.split('').map((char) => vfd_alphabet_segments[char.toLocaleLowerCase()] || [0, 0, 0, 0, 0, 0, 0])
 
   return (
-    <div class="flex gap-4">
+    <div class="flex flex-wrap gap-4">
       <For each={charsSegments()}>
         {(segments) => <VFDDigit segments={segments} width={props.width} height={props.height} />}
       </For>
