@@ -37,7 +37,7 @@ const experiments = [
   {
     title: "VFD",
     path: "/experiments/vfd",
-    imageUrl: "",
+    imageUrl: "https://live.staticflickr.com/65535/54086978014_65b06268c5_h.jpg",
     text: "VFD displays in CSS'"
   },
 ]

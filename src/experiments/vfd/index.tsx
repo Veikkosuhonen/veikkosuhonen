@@ -8,7 +8,7 @@ export default function() {
     <main class="container mx-auto">
       <h1 class="my-4">
         <Tint color="#F4DDBC">
-          <VFDText value="7-segment displays using CSS" width="32px" height="64px" />
+          <VFDText value="7-segment displays using CSS" width="64px" height="128px" />
         </Tint>
       </h1>
       <div class="mb-8">
@@ -29,14 +29,14 @@ export default function() {
         onInput={(e) => setText((e.target as HTMLInputElement).value)}
       />
       <Tint color="#EBFEFE">
-        <VFDText value={text()} width="16px" height="32px" />
+        <VFDText value={text()} width="18px" height="36px" />
       </Tint>
       <div class="my-4" />
       <Tint color="#aaffaa">
-        <VFDText glowRadius="2rem" value="As you can see 7 segments is not quite enough for nice text. It's still somewhat readable though. Some letters, such as M and N are not distinguishable, instead they rely on the readers ability to guess. For example, KNIGHT, XENON and HERO are quite ugly" width="12px" height="24px" />
+        <VFDText glowRadius="2rem" value="As you can see 7 segments is not quite enough for nice text. It's still somewhat readable though. Some letters, such as M and N are not distinguishable, instead they rely on the readers ability to guess. For example, KNIGHT, XENON and HERO are quite ugly" width="15px" height="30px" />
       </Tint>
       <Tint color="#aaaaff">
-        <VFDText value="Ive hardcoded the character-segment encodings so most special characters dont work" width="14px" height="28px" />
+        <VFDText value="Ive hardcoded the character-segment encodings so most special characters dont work. " width="15px" height="30px" />
       </Tint>
     </main>
   )
@@ -63,9 +63,9 @@ const VFDNumber = (props: { value: number }) => {
 
   return (
     <div class="flex gap-8">
-      <VFDDigit segments={vfd_digit_segments[d0()]} width="32px" height="64px" />
-      <VFDDigit segments={vfd_digit_segments[d1()]} width="32px" height="64px" />
-      <VFDDigit segments={vfd_digit_segments[d2()]} width="32px" height="64px" />
+      <VFDDigit segments={vfd_digit_segments[d0()]} width="33px" height="66px" />
+      <VFDDigit segments={vfd_digit_segments[d1()]} width="33px" height="66px" />
+      <VFDDigit segments={vfd_digit_segments[d2()]} width="33px" height="66px" />
     </div>
   )
 }
@@ -113,6 +113,17 @@ export const Tint = (props: { children: any, color: string }) => {
     <div class="relative p-[1rem]">
       {props.children}
       <div style={{
+        "background": "url(assets/hex.svg)",
+        "background-size": "10px",
+        "background-repeat": "repeat",
+        "mix-blend-mode": "color-burn",
+        "position": "absolute",
+        "top": 0,
+        "left": 0,
+        "right": 0,
+        "bottom": 0,
+      }} />
+      <div style={{
         "background-color": props.color,
         "mix-blend-mode": "multiply",
         "position": "absolute",
@@ -124,7 +135,6 @@ export const Tint = (props: { children: any, color: string }) => {
     </div>
   )
 }
-
 
 const vfd_digit_segments = [
   [1, 1, 1, 0, 1, 1, 1], // 0
@@ -165,7 +175,7 @@ const vfd_alphabet_segments: Record<string, number[]> = {
   "w": [0, 0, 0, 0, 1, 1, 1],
   "x": [0, 1, 1, 1, 1, 1, 0],
   "y": [0, 1, 1, 1, 0, 1, 1],
-  "z": [1, 0, 1, 1, 0, 1, 1],
+  "z": [1, 0, 1, 1, 1, 0, 1],
   "7": [1, 0, 1, 0, 0, 1, 0],
   "-": [0, 0, 0, 1, 0, 0, 0],
 }
