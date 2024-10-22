@@ -1,22 +1,14 @@
-import { createSignal, For, onMount } from "solid-js"
+import { createSignal, For } from "solid-js"
 
-export const Vfd = () => {
+export default function() {
   const [value, setValue] = createSignal(123)
   const [text, setText] = createSignal("hello world")
-
-  // onMount(() => {
-  //   const interval = setInterval(() => {
-  //     setValue((value() + 1) % 1000)
-  //   }, 100)
-// 
-  //   return () => clearInterval(interval)
-  // })
 
   return (
     <main class="container mx-auto">
       <h1 class="my-4">
         <Tint color="#F4DDBC">
-          <VFDText value="7-segment displays using CSS" />
+          <VFDText value="7-segment displays using CSS" width="32px" height="64px" />
         </Tint>
       </h1>
       <input 
@@ -34,20 +26,20 @@ export const Vfd = () => {
         onInput={(e) => setText((e.target as HTMLInputElement).value)}
       />
       <Tint color="#EBFEFE">
-        <VFDText value={text()} />
+        <VFDText value={text()} width="16px" height="32px" />
       </Tint>
     </main>
   )
 }
 
-export const VFDText = (props: { value: string }) => {
+export const VFDText = (props: { value: string, width: string, height: string }) => {
 
   const charsSegments = () => props.value.split('').map((char) => vfd_alphabet_segments[char.toLocaleLowerCase()] || [0, 0, 0, 0, 0, 0, 0])
 
   return (
     <div class="flex gap-4">
       <For each={charsSegments()}>
-        {(segments) => <VFDDigit segments={segments} width="32px" height="64px" />}
+        {(segments) => <VFDDigit segments={segments} width={props.width} height={props.height} />}
       </For>
     </div>
   )
@@ -69,34 +61,35 @@ const VFDNumber = (props: { value: number }) => {
 
 const VFDDigit = (props: { segments: number[], width: string, height: string }) => {
 
-  const horizontalWidth = '80%'
-  const horizontalHeight = '6.25%'
-  const verticalWidth = '12.5%'
-  const verticalHeight = '45%'
-  const borderRadius = '3xl'
+  const hw = '80%'
+  const hh = '6.25%'
+  const vw = '12.5%'
+  const vh = '45%'
 
 
   return (
     <div style={{ position: "relative", width: props.width, height: props.height, transform: "skew(-7deg)" }}>
-      <VFDSegment on={props.segments[0]} class={`absolute h-[${horizontalHeight}] w-[${horizontalWidth}] right-[10%] rounded-b-${borderRadius}`}  />
+      <VFDSegment on={props.segments[0]} w={hw} h={hh} class={`absolute right-[10%] rounded-b-3xl`}  />
 
-      <VFDSegment on={props.segments[1]} class={`absolute h-[${verticalHeight}] w-[${verticalWidth}] top-[2.5%] rounded-r-${borderRadius}`} />
-      <VFDSegment on={props.segments[2]} class={`absolute h-[${verticalHeight}] w-[${verticalWidth}] top-[2.5%] right-0 rounded-l-${borderRadius}`} />
+      <VFDSegment on={props.segments[1]} w={vw} h={vh} class={`absolute top-[2.5%] rounded-r-3xl`} />
+      <VFDSegment on={props.segments[2]} w={vw} h={vh} class={`absolute top-[2.5%] right-0 rounded-l-3xl`} />
 
-      <VFDSegment on={props.segments[3]} class={`absolute h-[${horizontalHeight}] w-[${horizontalWidth}] top-[46.75%] right-[10%] rounded-t-${borderRadius} rounded-b-${borderRadius}`} />
+      <VFDSegment on={props.segments[3]} w={hw} h={hh} class={`absolute top-[46.75%] right-[10%] rounded-t-3xl rounded-b-3xl`} />
 
-      <VFDSegment on={props.segments[4]} class={`absolute h-[${verticalHeight}] w-[${verticalWidth}] bottom-[2.5%] rounded-r-${borderRadius}`} />
-      <VFDSegment on={props.segments[5]} class={`absolute h-[${verticalHeight}] w-[${verticalWidth}] bottom-[2.5%] right-0 rounded-l-${borderRadius}`} />
+      <VFDSegment on={props.segments[4]} w={vw} h={vh} class={`absolute bottom-[2.5%] rounded-r-3xl`} />
+      <VFDSegment on={props.segments[5]} w={vw} h={vh} class={`absolute bottom-[2.5%] right-0 rounded-l-3xl`} />
 
-      <VFDSegment on={props.segments[6]} class={`absolute h-[${horizontalHeight}] w-[${horizontalWidth}] bottom-0 right-[10%] rounded-t-${borderRadius}`} />
+      <VFDSegment on={props.segments[6]} w={hw} h={hh} class={`absolute bottom-0 right-[10%] rounded-t-3xl`} />
     </div>
   )
 }
 
-const VFDSegment = (props: { on: number, class: string }) => {
+const VFDSegment = (props: { on: number, class: string, h: string, w: string }) => {
   return (
     <div class={props.class + (props.on ? ' bg-white' : ' bg-white/10')}
       style={{
+        width: props.w,
+        height: props.h,
         "box-shadow": props.on ? '0 0 1rem 0px white' : 'none',
       }}
     />
@@ -147,8 +140,8 @@ const vfd_alphabet_segments: Record<string, number[]> = {
   "j": [0, 1, 1, 0, 0, 1, 1],
   "k": [0, 1, 0, 1, 1, 0, 0],
   "l": [0, 1, 0, 0, 1, 0, 1],
-  "m": [1, 1, 1, 0, 1, 1, 0],
-  "n": [0, 0, 0, 1, 1, 1, 0],
+  "m": [0, 0, 0, 1, 1, 1, 0],
+  "n": [1, 1, 1, 0, 1, 1, 0],
   "o": [0, 0, 0, 1, 1, 1, 1],
   "p": [1, 1, 1, 1, 1, 0, 0],
   "q": [1, 1, 1, 1, 1, 1, 1],
