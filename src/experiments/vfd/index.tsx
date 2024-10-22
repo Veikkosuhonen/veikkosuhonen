@@ -33,20 +33,24 @@ export default function() {
       </Tint>
       <div class="my-4" />
       <Tint color="#aaffaa">
-        <VFDText value="As you can see 7 segments is not quite enough for nice text. It's still readable though" width="10px" height="20px" />
+        <VFDText glowRadius="2rem" value="As you can see 7 segments is not quite enough for nice text. It's still somewhat readable though. Some letters, such as M and N are not distinguishable, instead they rely on the readers ability to guess. For example, KNIGHT, XENON and HERO are quite ugly" width="12px" height="24px" />
+      </Tint>
+      <Tint color="#aaaaff">
+        <VFDText value="Ive hardcoded the character-segment encodings so most special characters dont work" width="14px" height="28px" />
       </Tint>
     </main>
   )
 }
 
-export const VFDText = (props: { value: string, width: string, height: string }) => {
+export const VFDText = (props: { value: string, width: string, height: string, glowRadius?: string }) => {
+  const glowR = props.glowRadius || '1rem'
 
   const charsSegments = () => props.value.split('').map((char) => vfd_alphabet_segments[char.toLocaleLowerCase()] || [0, 0, 0, 0, 0, 0, 0])
 
   return (
     <div class="flex flex-wrap gap-4">
       <For each={charsSegments()}>
-        {(segments) => <VFDDigit segments={segments} width={props.width} height={props.height} />}
+        {(segments) => <VFDDigit segments={segments} width={props.width} height={props.height} glowRadius={glowR} />}
       </For>
     </div>
   )
@@ -66,7 +70,8 @@ const VFDNumber = (props: { value: number }) => {
   )
 }
 
-const VFDDigit = (props: { segments: number[], width: string, height: string }) => {
+const VFDDigit = (props: { segments: number[], width: string, height: string, glowRadius?: string }) => {
+  const glowR = props.glowRadius || '1rem'
 
   const hw = '80%'
   const hh = '6.25%'
@@ -76,28 +81,28 @@ const VFDDigit = (props: { segments: number[], width: string, height: string }) 
 
   return (
     <div style={{ position: "relative", width: props.width, height: props.height, transform: "skew(-7deg)" }}>
-      <VFDSegment on={props.segments[0]} w={hw} h={hh} class={`absolute right-[10%] rounded-b-3xl`}  />
+      <VFDSegment on={props.segments[0]} w={hw} h={hh} glowRadius={glowR}class={`absolute right-[10%] rounded-b-3xl`}  />
 
-      <VFDSegment on={props.segments[1]} w={vw} h={vh} class={`absolute top-[2.5%] rounded-r-3xl`} />
-      <VFDSegment on={props.segments[2]} w={vw} h={vh} class={`absolute top-[2.5%] right-0 rounded-l-3xl`} />
+      <VFDSegment on={props.segments[1]} w={vw} h={vh} glowRadius={glowR}class={`absolute top-[2.5%] rounded-r-3xl`} />
+      <VFDSegment on={props.segments[2]} w={vw} h={vh} glowRadius={glowR}class={`absolute top-[2.5%] right-0 rounded-l-3xl`} />
 
-      <VFDSegment on={props.segments[3]} w={hw} h={hh} class={`absolute top-[46.75%] right-[10%] rounded-t-3xl rounded-b-3xl`} />
+      <VFDSegment on={props.segments[3]} w={hw} h={hh} glowRadius={glowR}class={`absolute top-[46.75%] right-[10%] rounded-t-3xl rounded-b-3xl`} />
 
-      <VFDSegment on={props.segments[4]} w={vw} h={vh} class={`absolute bottom-[2.5%] rounded-r-3xl`} />
-      <VFDSegment on={props.segments[5]} w={vw} h={vh} class={`absolute bottom-[2.5%] right-0 rounded-l-3xl`} />
+      <VFDSegment on={props.segments[4]} w={vw} h={vh} glowRadius={glowR}class={`absolute bottom-[2.5%] rounded-r-3xl`} />
+      <VFDSegment on={props.segments[5]} w={vw} h={vh} glowRadius={glowR}class={`absolute bottom-[2.5%] right-0 rounded-l-3xl`} />
 
-      <VFDSegment on={props.segments[6]} w={hw} h={hh} class={`absolute bottom-0 right-[10%] rounded-t-3xl`} />
+      <VFDSegment on={props.segments[6]} w={hw} h={hh} glowRadius={glowR} class={`absolute bottom-0 right-[10%] rounded-t-3xl`} />
     </div>
   )
 }
 
-const VFDSegment = (props: { on: number, class: string, h: string, w: string }) => {
+const VFDSegment = (props: { on: number, class: string, h: string, w: string, glowRadius: string }) => {
   return (
     <div class={props.class + (props.on ? ' bg-white' : ' bg-white/10')}
       style={{
         width: props.w,
         height: props.h,
-        "box-shadow": props.on ? '0 0 1rem 0px white' : 'none',
+        "box-shadow": props.on ? `0 0 ${props.glowRadius} 0px white` : 'none',
       }}
     />
   )
@@ -141,24 +146,26 @@ const vfd_alphabet_segments: Record<string, number[]> = {
   "d": [0, 0, 1, 1, 1, 1, 1],
   "e": [1, 1, 0, 1, 1, 0, 1],
   "f": [1, 1, 0, 1, 1, 0, 0],
-  "g": [1, 1, 1, 1, 0, 1, 1],
+  "g": [1, 1, 0, 0, 1, 1, 1],
   "h": [0, 1, 0, 1, 1, 1, 0],
-  "i": [0, 0, 1, 0, 0, 1, 0],
-  "j": [0, 1, 1, 0, 0, 1, 1],
+  "i": [0, 1, 0, 0, 1, 0, 0],
+  "j": [0, 0, 1, 0, 0, 1, 1],
   "k": [0, 1, 0, 1, 1, 0, 0],
   "l": [0, 1, 0, 0, 1, 0, 1],
   "m": [0, 0, 0, 1, 1, 1, 0],
   "n": [1, 1, 1, 0, 1, 1, 0],
   "o": [0, 0, 0, 1, 1, 1, 1],
   "p": [1, 1, 1, 1, 1, 0, 0],
-  "q": [1, 1, 1, 1, 1, 1, 1],
+  "q": [1, 1, 1, 1, 0, 1, 0],
   "r": [0, 0, 0, 1, 1, 0, 0],
   "s": [1, 1, 0, 1, 0, 1, 1],
-  "t": [0, 1, 0, 1, 1, 0, 0],
+  "t": [0, 1, 0, 1, 1, 0, 1],
   "u": [0, 1, 1, 0, 1, 1, 1],
   "v": [0, 1, 1, 0, 1, 1, 1],
   "w": [0, 0, 0, 0, 1, 1, 1],
-  "x": [0, 1, 0, 1, 1, 0, 1],
-  "y": [0, 1, 1, 1, 0, 1, 0],
+  "x": [0, 1, 1, 1, 1, 1, 0],
+  "y": [0, 1, 1, 1, 0, 1, 1],
   "z": [1, 0, 1, 1, 0, 1, 1],
+  "7": [1, 0, 1, 0, 0, 1, 0],
+  "-": [0, 0, 0, 1, 0, 0, 0],
 }
