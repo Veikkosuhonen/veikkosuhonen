@@ -8,7 +8,7 @@ I'm Veikko, a 500x rockstar cowboy kickass hacker programmer with a passion in
 - Data science & ML
 - Astronomy
 
-Try my latest project, [fBm-based image generator](https://fbmlab.vercel.app)
+Check out this [cool procedural city I've been building](https://veikkosuhonen.github.io/three-deferred-rp)
 
 I also have a website with random apps in it:
 
