@@ -3,44 +3,62 @@ import { Component, createSignal } from "solid-js"
 import { createSpring, animated, config } from "solid-spring";
 import { Background } from "~/components/Background";
 
-const experiments = [
+const snippets = [
   {
     title: "Music visualizer",
-    path: "/experiments/visualiser",
+    path: "/snippets/visualiser",
     imageUrl: "https://live.staticflickr.com/65535/53454330580_a754211f15_k.jpg",
     text: "A WebGL music visualizer using web audio api. File & microphone support, and lots of tweakable sliders!"
   },
   {
     title: "Terrain generator",
-    path: "/experiments/terrain",
+    path: "/snippets/terrain",
     imageUrl: "https://live.staticflickr.com/65535/53453915506_a6ee5ec899_h.jpg",
     text: "Interactive terrain simulation with procedural generation, erosion and lighting. A little demonstration of how plain old WebGL can be used for general-purpose GPU compute."
   },
   {
     title: "A&A combat simulator",
-    path: "/experiments/aa-combat-sim",
+    path: "/snippets/aa-combat-sim",
     imageUrl: "https://live.staticflickr.com/65535/53522237177_8ffbc5dc64_k.jpg",
     text: "A simple Axis & Allies combat simulator."
   },
   {
     title: "Three-body problem",
-    path: "/experiments/threebody",
+    path: "/snippets/threebody",
     imageUrl: "https://live.staticflickr.com/65535/53641516895_18e82c9df5_h.jpg",
     text: "Visit Alpha Centauri AKA Trisolaris and see the three-body problem in action."
   },
   {
     title: "Island",
-    path: "/experiments/water",
+    path: "/snippets/water",
     imageUrl: "https://live.staticflickr.com/65535/53914487061_c13c24abdf_h.jpg",
     text: "3D procedurally generated ocean & island"
   },
   {
     title: "VFD",
-    path: "/experiments/vfd",
+    path: "/snippets/vfd",
     imageUrl: "https://live.staticflickr.com/65535/54086978014_65b06268c5_h.jpg",
-    text: "VFD displays in CSS'"
+    text: "VFD displays in CSS"
   },
 ]
+
+const projects = [
+  {
+    title: "Git Viz",
+    url: "https://git-viz.vercel.app/",
+    // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305425270/in/dateposted-public/" title="git-viz"><img src="https://live.staticflickr.com/65535/54305425270_5d1f41bca2_h.jpg" width="1600" height="814" alt="git-viz"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+    imageUrl: "https://live.staticflickr.com/65535/54305425270_5d1f41bca2_h.jpg",
+    text: "Visualizing source code relations and code ownership: an interactive data visualization project",
+  },
+  {
+    title: "City demo",
+    url: "https://veikkosuhonen.github.io/three-deferred-rp",
+    // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305234064/in/dateposted-public/" title="threejs-city"><img src="https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg" width="1600" height="888" alt="threejs-city"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+    imageUrl: "https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg",
+    text: "A procedural city demonstrating some high quality deferred rendering techniques and effects (warning you need an M1 laptop or better to run this)",
+  }
+]
+
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
   let cardElement: HTMLDivElement|undefined
   const mouse = createMousePosition(cardElement);
@@ -78,9 +96,10 @@ const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  =
   )
 }
 
-const Experiment: Component<{ title: string, path: string, imageUrl: string, text: string }>  = (props) => {
+const ProjectCard: Component<{ title: string, path: string, imageUrl: string, text: string, nth: number }>  = (props) => {
   const [expanded, setExpanded] = createSignal(false)
-  let timeoutId: number|undefined
+
+  setTimeout(() => setExpanded(true), 100 * props.nth)
 
   const styles = createSpring(() => ({
     to: {
@@ -91,31 +110,20 @@ const Experiment: Component<{ title: string, path: string, imageUrl: string, tex
       translateY: -100,
       opacity: 0,
     },
-    config: config.gentle,
+    config: config.slow,
   }));
 
-  const onMouseEnter = () => {
-    clearTimeout(timeoutId)
-    setExpanded(true)
-  }
-
-  const onMouseLeave = () => {
-    timeoutId = setTimeout(() => setExpanded(false), 1000) as any as number
-  }
-
   return (
-    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} class="aspect-[3/2] w-80">
-      <div class="rounded-lg bg-sunset-500 px-2 pt-1 pb-2">
-        <ImageLink title={props.title} path={props.path} imageUrl={props.imageUrl}/>
-      </div>
-      <animated.p class="text-slate-200 font-light rounded-lg p-4 mt-2 -z-10 bg-gradient-to-b from-sunset-500 to-sunset-600" style={styles()}>
+    <div class="aspect-[3/2] w-80">
+      <ImageLink title={props.title} path={props.path} imageUrl={props.imageUrl}/>
+      <animated.p class="text-slate-200 font-light rounded-lg p-4 mt-2 -z-10" style={styles()}>
         {props.text}
       </animated.p>
     </div>
   )
 }
 
-export default function Experiments() {
+export default function Projects() {
   
 
   return (
@@ -124,15 +132,33 @@ export default function Experiments() {
     <main class="flex-grow relative mt-12 mx-2">
       <article class="container mx-auto">
         <h1 class="text-6xl font-serif mt-8">
-          Experiments
+          Project Showcase
         </h1>
+        <h2 class="text-3xl font-serif mt-8">
+          Snippets
+        </h2>
         <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
-          This is a small collection of some graphics-related web experiments I've made for fun, and put on this website.
+          A small of some graphics-related web experiments I've made for fun and put on this website.
+          All source code is in the{" "}
+          <a href="https://github.com/Veikkosuhonen/veikkosuhonen/blob/master/src/experiments" class="text-sunset-300 underline">website's repo</a>
         </p>
         <section>
           <div class="flex flex-wrap gap-2">
-            {experiments.map((experiment) => (
-              <Experiment title={experiment.title} path={experiment.path} imageUrl={experiment.imageUrl} text={experiment.text} />
+            {snippets.map((snippet, idx) => (
+              <ProjectCard title={snippet.title} path={snippet.path} imageUrl={snippet.imageUrl} text={snippet.text} nth={idx} />
+            ))}
+          </div>
+        </section>
+        <h2 class="text-3xl font-serif mt-8">
+          Other projects you can try
+        </h2>
+        <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
+          I like making stuff available in the public web if I can. Here's a couple "research" projects I've made that you can try out.
+        </p>
+        <section>
+          <div class="flex flex-wrap gap-2">
+            {projects.map((project, idx) => (
+              <ProjectCard title={project.title} path={project.url} imageUrl={project.imageUrl} text={project.text} nth={idx} />
             ))}
           </div>
         </section>
@@ -141,4 +167,3 @@ export default function Experiments() {
     </>
   )
 }
-  

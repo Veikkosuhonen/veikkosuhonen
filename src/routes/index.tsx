@@ -18,14 +18,14 @@ export default function Home() {
     <Background bgUrl="/assets/reflections.svg" bgSize={512} />
     <main class="flex-grow flex flex-col relative items-center">
       <CloudSvg />
-      <article class="p-8 sm:p-16 md:p-32 font-light container mx-auto">
+      <article class="p-4 sm:p-8 md:p-16 font-light container mx-auto">
         <h1 class="text-4xl font-serif flex gap-4 text-slate-900">
           Hi and welcome to my website!
           <button onMouseDown={() => setEmbersOn(!embersOn())}  class="hover:text-orange-600" classList={{ "text-red-600": embersOn() }}>
             <Icon path={sparkles} style="width: 24px"/>
           </button>
         </h1>
-        <p class="mt-8 text-slate-900">
+        <p class="mt-6 text-slate-900">
           This place is mainly for random browser apps & experiments I sometimes get an irresistible urge to make.
         </p>
         <div class="h-96 flex">
@@ -34,7 +34,7 @@ export default function Home() {
         <h2 class="text-4xl font-serif">About me</h2>
         <p class="mt-8">
           I'm Veikko, a software engineer from Helsinki with a positive look on life, the universe and everything.
-          Like everybody else, I mostly work in the JS mines, but I've also experience with Java, Python, Ruby, C++, C# and Rust.
+          Like everybody else, I'm mostly hacking away in the JS mines, but I've also experience with Java, Python, Ruby, C++, C# and Rust.
           <br/>
           <span class="text-xs">If you care, you can check out my
           <a href="https://linkedin.com/in/veikko-suhonen-394751230" target="_blank" class="underline text-indigo-300">LinkedIn page <Icon path={arrowTopRightOnSquare} style="width: 12px; display: inline;"/></a></span>

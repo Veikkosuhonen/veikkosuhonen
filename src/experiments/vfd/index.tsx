@@ -12,7 +12,7 @@ export default function() {
         </Tint>
       </h1>
       <div class="mb-8">
-        <a href="https://github.com/Veikkosuhonen/veikkosuhonen/blob/master/src/experiments/vfd/index.tsx" class="text-sunset-300 underline">(source code)</a>
+        <a href="https://github.com/Veikkosuhonen/veikkosuhonen/blob/master/src/snippets/vfd/index.tsx" class="text-sunset-300 underline">(source code)</a>
       </div>
       <input 
         class="bg-black text-sunset-300 p-1 my-2 border border-sunset-400"

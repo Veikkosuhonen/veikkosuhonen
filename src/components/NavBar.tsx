@@ -1,10 +1,10 @@
 import { useLocation, A, useBeforeLeave } from "@solidjs/router";
-import { createEffect, createSignal, onMount } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import { createSpring, animated, config } from "solid-spring";
 
 const links: { href:string, text:string, el:HTMLAnchorElement|undefined }[] = [
   { href: "/", text: "Home", el: undefined },
-  { href: "/experiments", text: "Experiments", el: undefined },
+  { href: "/projects", text: "Project Showcase", el: undefined },
 ]
 
 const NavBar = () => {
