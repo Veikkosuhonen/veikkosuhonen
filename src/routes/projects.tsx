@@ -44,19 +44,26 @@ const snippets = [
 
 const projects = [
   {
+    title: "City demo",
+    url: "https://veikkosuhonen.github.io/three-deferred-rp",
+    // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305234064/in/dateposted-public/" title="threejs-city"><img src="https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg" width="1600" height="888" alt="threejs-city"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+    imageUrl: "https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg",
+    text: "A procedural city demonstrating some high quality deferred rendering techniques and effects (warning you need an M1 laptop or better to run this)",
+  },
+  {
+    title: "FBM Lab",
+    url: "https://fbmlab.vercel.app/?u_time_x=0.725&u_lacunarity_x=1.95&u_persistence_x=0.5025&u_scale_x=4.0105&u_position_x=5.394628099173543&u_position_y=0.32541322314049675&u_rot1_x=0.696&u_col0_x=1&u_col0_y=0.21568627450980393&u_col0_z=0&u_pow0_x=3.1069&u_col1_x=0.25882352941176473&u_col1_y=0&u_col1_z=0.3058823529411765&u_pow1_x=8.6014&u_col2_x=0.28627450980392155&u_col2_y=0.4745098039215686&u_col2_z=0.8509803921568627&u_pow2_x=5.1049&u_smoothness_x=0.4802&u_voronoi_x=1.18&u_fScale_x=5.1085&u_gamma_x=1.4&u_exposure_x=6.5",
+    // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305465695/in/dateposted-public/" title="fbm lab"><img src="https://live.staticflickr.com/65535/54305465695_88e475d653_h.jpg" width="1600" height="867" alt="fbm lab"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+    imageUrl: "https://live.staticflickr.com/65535/54305465695_88e475d653_h.jpg",
+    text: "Algorithmic generative image tool using fractional brownian motion. Traverse the fractal like google maps and tune knobs",
+  },
+  {
     title: "Git Viz",
     url: "https://git-viz.vercel.app/",
     // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305425270/in/dateposted-public/" title="git-viz"><img src="https://live.staticflickr.com/65535/54305425270_5d1f41bca2_h.jpg" width="1600" height="814" alt="git-viz"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
     imageUrl: "https://live.staticflickr.com/65535/54305425270_5d1f41bca2_h.jpg",
     text: "Visualizing source code relations and code ownership: an interactive data visualization project",
   },
-  {
-    title: "City demo",
-    url: "https://veikkosuhonen.github.io/three-deferred-rp",
-    // <a data-flickr-embed="true" href="https://www.flickr.com/photos/199880417@N08/54305234064/in/dateposted-public/" title="threejs-city"><img src="https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg" width="1600" height="888" alt="threejs-city"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
-    imageUrl: "https://live.staticflickr.com/65535/54305234064_d531489e5e_h.jpg",
-    text: "A procedural city demonstrating some high quality deferred rendering techniques and effects (warning you need an M1 laptop or better to run this)",
-  }
 ]
 
 const ImageLink: Component<{ title: string, path: string, imageUrl: string }>  = (props) => {
@@ -135,10 +142,23 @@ export default function Projects() {
           Project Showcase
         </h1>
         <h2 class="text-3xl font-serif mt-8">
+          Fun projects online
+        </h2>
+        <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
+          I like making stuff available in the public web if I can. Here's a few personal "research" projects I've made that you can try out.
+        </p>
+        <section>
+          <div class="flex flex-wrap gap-2">
+            {projects.map((project, idx) => (
+              <ProjectCard title={project.title} path={project.url} imageUrl={project.imageUrl} text={project.text} nth={idx} />
+            ))}
+          </div>
+        </section>
+        <h2 class="text-3xl font-serif mt-8">
           Snippets
         </h2>
         <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
-          A small of some graphics-related web experiments I've made for fun and put on this website.
+          Some graphics-related web experiments I've put on this website.
           All source code is in the{" "}
           <a href="https://github.com/Veikkosuhonen/veikkosuhonen/blob/master/src/experiments" class="text-sunset-300 underline">website's repo</a>
         </p>
@@ -146,19 +166,6 @@ export default function Projects() {
           <div class="flex flex-wrap gap-2">
             {snippets.map((snippet, idx) => (
               <ProjectCard title={snippet.title} path={snippet.path} imageUrl={snippet.imageUrl} text={snippet.text} nth={idx} />
-            ))}
-          </div>
-        </section>
-        <h2 class="text-3xl font-serif mt-8">
-          Other projects you can try
-        </h2>
-        <p class="text-slate-200 mb-8 mt-8 w-96 font-light">
-          I like making stuff available in the public web if I can. Here's a couple "research" projects I've made that you can try out.
-        </p>
-        <section>
-          <div class="flex flex-wrap gap-2">
-            {projects.map((project, idx) => (
-              <ProjectCard title={project.title} path={project.url} imageUrl={project.imageUrl} text={project.text} nth={idx} />
             ))}
           </div>
         </section>
