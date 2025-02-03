@@ -21,11 +21,8 @@ const vertexShader = /* glsl */`
 #define _WaveScale 2.0
 uniform float u_time;
 
-uniform mat4 u_shadowCameraViewMatrix;
-uniform mat4 u_shadowCameraProjectionMatrix;
 uniform sampler2D u_heightMap;
 
-varying vec4 vShadowCoord;
 varying float vDistanceField;
 varying vec3 vPosition;
 varying vec3 vNormal;
@@ -127,8 +124,6 @@ void main() {
     vUv = worldUV;
 
     gl_Position = projectionMatrix * viewMatrix * vec4(positionWS, 1.0);
-
-    vShadowCoord = u_shadowCameraProjectionMatrix * u_shadowCameraViewMatrix * vec4(positionWS, 1.0);
 }
 `;
 
@@ -158,12 +153,9 @@ uniform vec3 u_shallowWater;
 uniform vec3 u_deepWater;
 uniform vec3 u_sunDirection;
 
-uniform vec3 u_shadowCameraPosition;
-uniform sampler2D u_shadowMap;
 uniform sampler2D u_heightMap;
 
 // Varyings
-varying vec4 vShadowCoord;
 varying float vDistanceField;
 varying vec3 vPosition;
 varying vec3 vNormal;
@@ -174,29 +166,8 @@ varying float vPeak;
 
 void main() {
     vec3 normal = normalize(vNormal);
-
-    vec3 shadowCoord = vShadowCoord.xyz / vShadowCoord.w * 0.5 + 0.5;
-
-    float depth_shadowCoord = shadowCoord.z;
-
-    vec2 depthMapUv = shadowCoord.xy;
-    float depth_depthMap = unpackRGBAToDepth(texture2D(u_shadowMap, depthMapUv));
-
+  
     float ndotl = max(0.0, dot(normalize(u_sunDirection), normal));
-    float bias = 0.0005 * tan(acos(ndotl)); // cosTheta is dot( n,l ), clamped between 0 and 1
-    bias = clamp(bias, 0.0, 0.01);
-    
-    float shadowFactor = step(depth_shadowCoord - bias, depth_depthMap);
-
-    bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );
-    bool inFrustum = all( inFrustumVec );
-
-    bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );
-    bool frustumTest = all( frustumTestVec );
-
-    if(frustumTest == false){
-        shadowFactor = 1.0;
-    }
 
     vec3 viewDirection = normalize(cameraPosition - vPosition);
 
@@ -228,9 +199,6 @@ void main() {
     vec3 skybox = textureCube(u_skybox, skyboxDirection).rgb;
     vec3 fresnelColor = skybox * fresnel;
 
-    // If in shadow, darken specular if it is towards light
-    fresnelColor *= 1.0 - (1.0 - shadowFactor) * ndotl;
-
     // Peak effect
     float peak = max(0.0, vPeak);
     float foam = smoothstep(0.004, 0.05, peak) * u_foamAmount;
@@ -245,7 +213,7 @@ void main() {
     specNormal.xz *= u_specularNormalStrength;
     specNormal = normalize(specNormal);
     float spec = pow(max(dot(halfwayDirection, specNormal), 0.0), specularPower) * ndotl * u_specularStrength;
-    vec3 specularColor = vec3(1.0) * spec * shadowFactor;
+    vec3 specularColor = vec3(1.0) * spec;
 
     // Fresnel for specular
     base = 1.0 - dot(viewDirection, halfwayDirection);
@@ -259,7 +227,7 @@ void main() {
 
     // Refraction
     vec3 refractDirection = refract(-viewDirection, normal, 1.0 / 1.333);
-    float underwaterLightContrib = pow(max(0.0, dot(lightDirection, refractDirection)), u_underwaterLightPower) * shadowFactor;
+    float underwaterLightContrib = pow(max(0.0, dot(lightDirection, refractDirection)), u_underwaterLightPower);
     float underwaterLightAmount = (underwaterLightContrib) * u_underwaterLightStrength;
 
     float down = max(0.0, pow(max(0.0, -refractDirection.y), u_underwaterFogPower) - underwaterLightAmount);
@@ -267,14 +235,14 @@ void main() {
     vec3 waterColor = mix(shallowWaterColor, u_deepWater, down);
 
     // Foam
-    vec3 foamColor = texture2D(u_foam, vUv / 4.0).rgb * (shadowFactor * 0.5 + 0.5);
+    vec3 foamColor = texture2D(u_foam, vUv / 4.0).rgb;
     waterColor += foamColor * foam;
 
     vec3 color = fresnelColor + waterColor + specularColor;
 
     float dist = length(vPosition - cameraPosition);
-    float fogFactor = pow(2.0, -dist * 0.0004);
-    // color = mix(color, vec3(1.0), 1.0 - fogFactor);
+    float fogFactor = pow(2.0, -dist * 0.0002);
+    color = mix(color, vec3(1.0), 1.0 - fogFactor);
 
     gl_FragColor = vec4(color, 1.0);
 }
@@ -289,10 +257,8 @@ rippleNormal.wrapS = THREE.MirroredRepeatWrapping;
 rippleNormal.wrapT = THREE.MirroredRepeatWrapping;
 
 export default ({
-  shadowMap,
   heightMap,
 }: {
-  shadowMap: THREE.Texture,
   heightMap: THREE.Texture,
 }) => new THREE.ShaderMaterial({
   uniforms: {
@@ -316,10 +282,6 @@ export default ({
     u_shallowWater: { value: new THREE.Color(0x10afaf) },
     u_deepWater: { value: new THREE.Color(0x000a57) },
     u_sunDirection: { value: new THREE.Vector3(0.5, 0.5, 0) },
-    u_shadowCameraViewMatrix: { value: new THREE.Matrix4() },
-    u_shadowCameraProjectionMatrix: { value: new THREE.Matrix4() },
-    u_shadowCameraPosition: { value: new THREE.Vector3() },
-    u_shadowMap: { value: shadowMap },
     u_heightMap: { value: heightMap },
     u_distanceCameraViewMatrix: { value: new THREE.Matrix4() },
     u_distanceCameraProjectionMatrix: { value: new THREE.Matrix4() },

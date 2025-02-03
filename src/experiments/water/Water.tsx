@@ -3,13 +3,11 @@ import { createSignal, on, onCleanup, onMount } from "solid-js"
 import * as THREE from 'three'
 import { MapControls } from "three/examples/jsm/controls/MapControls"
 import { Sky } from "three/examples/jsm/objects/Sky"
-import { ShadowMapViewer } from "three/examples/jsm/utils/ShadowMapViewer"
 import { GPUStatsPanel } from "three/examples/jsm/utils/GPUStatsPanel"
 import { createLodChunkArea } from "./LodChunk"
 import getWaterMaterial from "./materials/water"
 import getCliffMaterial from "./materials/cliff"
 import { createGeometry } from "./GeneratedGeometry"
-import { shadowMaterial } from "./materials/shadow"
 import { createCliff } from "./createCliff"
 import { skyBox } from "./skybox"
 import { Howl } from 'howler'
@@ -18,17 +16,10 @@ import { createHeightmap } from "./createHeightmap"
 let waterMaterial: THREE.ShaderMaterial|null = null;
 let cliffMaterial: THREE.ShaderMaterial|null = null;
 
-/**
- * Good links:
- * https://mofu-dev.com/en/blog/threejs-shadow-map/
- */
-
 const start = () => {
   const canvas = document.getElementById('water') as HTMLCanvasElement
 
   const scene = new THREE.Scene()
-  const shadowMapScene = new THREE.Scene()
-  scene.add(shadowMapScene);
 
   const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000)
   camera.frustumCulled = true
@@ -88,27 +79,11 @@ const start = () => {
 
   const sun = new THREE.DirectionalLight(0xffffff, 1.0);
   sun.position.set(-40, 10, 40);
-  sun.shadow.camera = new THREE.OrthographicCamera(-45, 45, 45, -45, 1.0, 110);
-  sun.shadow.camera.position.copy(sun.position);
-  sun.shadow.camera.lookAt(scene.position);
-  shadowMapScene.add(sun.shadow.camera);
-  // const cameraHelper = new THREE.CameraHelper(sun.shadow.camera);
-  // scene.add(cameraHelper);
-
-  sun.shadow.mapSize.x = 2048;
-  sun.shadow.mapSize.y = 2048;
-  sun.shadow.map = new THREE.WebGLRenderTarget(sun.shadow.mapSize.x, sun.shadow.mapSize.y, {
-    minFilter: THREE.LinearFilter,
-    magFilter: THREE.LinearFilter,
-    format: THREE.RGBAFormat,
-    type: THREE.FloatType,
-  });
 
   const heightMap = createHeightmap(renderer);
 
-  waterMaterial = getWaterMaterial({ shadowMap: sun.shadow.map.texture, heightMap });
-  cliffMaterial = getCliffMaterial({ shadowMap: sun.shadow.map.texture, heightMap });
-  shadowMaterial.uniforms.u_heightMap.value = heightMap;
+  waterMaterial = getWaterMaterial({ heightMap });
+  cliffMaterial = getCliffMaterial({ heightMap });
 
   const waterChunks = createLodChunkArea(new THREE.Vector3(0, 0, 0), 12, waterMaterial)
   scene.add(...waterChunks);
@@ -116,8 +91,7 @@ const start = () => {
   const cliffMesh = new THREE.PlaneGeometry(64, 64, 256, 256);
   cliffMesh.rotateX(-Math.PI / 2);
   const cliff = new THREE.Mesh(cliffMesh, cliffMaterial);
-
-  shadowMapScene.add(cliff);
+  scene.add(cliff);
 
   // const sky = new Sky();
   // sky.scale.setScalar( 450000 );
@@ -137,30 +111,12 @@ const start = () => {
     requestAnimationFrame(animate);
     stats.startQuery();
 
-    // Render cliff shadow
-    cliff.material = shadowMaterial;
-    renderer.setRenderTarget(sun.shadow.map);
-    renderer.clear();
-    renderer.render(scene, sun.shadow.camera);
-    renderer.setRenderTarget(null);
-    cliff.material = cliffMaterial!;
-
-    // const depthViewer = new ShadowMapViewer(sun);
-    // depthViewer.size.set(1024, 1024);
-    // depthViewer.render( renderer );
-
     const initialDistance = 0 // camera.position.distanceTo(controls.target);
     waterChunks.forEach(wc => wc.update(camera.position, initialDistance));
     // console.log(waterMaterial.uniforms)
     waterMaterial!.uniforms.u_time.value = time / 1500.0;
     waterMaterial!.uniforms.u_sunDirection.value.copy(sun.position);
-    waterMaterial!.uniforms.u_shadowCameraPosition.value.copy(sun.shadow.camera.position);
-    waterMaterial!.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
-    waterMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
     cliffMaterial!.uniforms.u_sunDirection.value.copy(sun.position);
-    cliffMaterial!.uniforms.u_shadowCameraPosition.value.copy(sun.shadow.camera.position);
-    cliffMaterial!.uniforms.u_shadowCameraProjectionMatrix.value.copy(sun.shadow.camera.projectionMatrix);
-    cliffMaterial!.uniforms.u_shadowCameraViewMatrix.value.copy(sun.shadow.camera.matrixWorldInverse);
     // sky.material.uniforms.sunPosition.value.copy(sun.position);
 
     dofEffect.cocMaterial.focusDistance = focusDistance();
