@@ -17,6 +17,13 @@ module.exports = {
         "serif": ["Lora", "serif"],
         "sans": ["Nunito", "sans-serif"],
       },
+      fontWeight: {
+        "light": 500,
+        "normal": 600,
+        "medium": 700,
+        "semibold": 800,
+        "bold": 900,
+      },
     }
   },
   plugins: []

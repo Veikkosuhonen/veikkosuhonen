@@ -4,7 +4,7 @@ import NavBar from "./components/NavBar"
 import "./app.css"
 import { Footer } from "./components/Footer"
 import { Router } from "@solidjs/router";
-import { FileRoutes } from "@solidjs/start";
+import { FileRoutes } from "@solidjs/start/router";
 
 export default function Root() {
   return (

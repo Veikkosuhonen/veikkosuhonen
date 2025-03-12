@@ -1,11 +1,8 @@
 import { Icon } from "solid-heroicons"
 import { sparkles } from "solid-heroicons/solid";
 import { arrowTopRightOnSquare } from "solid-heroicons/solid-mini"
-import { Component, createSignal, JSXElement } from "solid-js"
-import { Background } from "~/components/Background";
-import { CloudSvg } from "~/components/CloudSvg";
-import { EmbersCanvas } from "~/experiments/embers/Canvas"
-import { WeekendCounter } from "~/experiments/weekendCounter/WeekendCounter";
+import { createSignal } from "solid-js"
+import ShaderBackground from "~/components/ShaderBackground";
 
 export default function Home() {
 
@@ -15,9 +12,8 @@ export default function Home() {
 
   return (
     <>
-    <Background bgUrl="/assets/reflections.svg" bgSize={512} />
+    <ShaderBackground />
     <main class="flex-grow flex flex-col relative items-center">
-      <CloudSvg />
       <article class="p-4 sm:p-8 md:p-16 font-light container mx-auto">
         <h1 class="text-4xl font-serif flex gap-4 text-slate-900">
           Hi and welcome to my website!
@@ -47,7 +43,6 @@ export default function Home() {
         <p class="mt-8 mb-48">
           Go check out the experiments section for some cool things
         </p>
-        <WeekendCounter />
       </article>
     </main>
     </>
