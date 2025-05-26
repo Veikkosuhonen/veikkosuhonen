@@ -21,7 +21,7 @@
     "@solid-primitives/mouse": "^2.0.6",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
-    "@solidjs/start": "^1.1.0",
+    "@solidjs/start": "^1.1.4",
     "classnames": "^2.3.2",
     "d3": "^7.9.0",
     "howler": "^2.2.4",
@@ -32,7 +32,7 @@
     "solid-js": "^1.9.5",
     "solid-spring": "^0.0.7",
     "three": "^0.163.0",
-    "vinxi": "0.5.3"
+    "vinxi": "0.5.6"
   },
   "engines": {
     "node": ">=22"
